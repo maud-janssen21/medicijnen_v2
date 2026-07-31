@@ -260,26 +260,53 @@
   <!-- TAB 3: BESTELLING -->
   <div id="tab-bestelling" class="panel">
 
-    <!-- SECTIE 1: MIJN BESTELLING -->
-    <div class="bestel-sectie-header">
-      <span><i class="ti ti-shopping-cart"></i> Mijn bestelling</span>
-      <button class="btn btn-sm" onclick="openBestelToevoegen()"><i class="ti ti-plus"></i> Handmatig toevoegen</button>
-    </div>
-    <div id="bestelStatus" class="status-box"></div>
-    <div id="bestelView"></div>
-    <div class="bestel-geplaatst-btn" id="bestelGeplaatst" style="display:none;margin-bottom:20px">
-      <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
+    <!-- Sub-tabbladen -->
+    <div class="invoer-tabs" style="margin-bottom:14px">
+      <button class="invoer-tab active" id="btab-voorspelling" onclick="switchBestelTab('voorspelling')"><i class="ti ti-sparkles"></i> Voorspelling</button>
+      <button class="invoer-tab" id="btab-handmatig" onclick="switchBestelTab('handmatig')"><i class="ti ti-edit"></i> Handmatig</button>
+      <button class="invoer-tab" id="btab-overzicht" onclick="switchBestelTab('overzicht')"><i class="ti ti-list"></i> Besteloverzicht <span id="bestelTeller" style="display:none;background:rgba(255,255,255,0.3);border-radius:10px;padding:0 6px;font-size:10px;margin-left:2px"></span></button>
     </div>
 
-    <!-- SECTIE 2: VOORSPELLING -->
-    <div class="bestel-sectie-header" style="margin-top:8px">
-      <span><i class="ti ti-sparkles"></i> Voorspelling volgende maand</span>
+    <!-- SUB-TAB 1: VOORSPELLING -->
+    <div id="bpanel-voorspelling">
+      <div class="pred-info">
+        <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
+        <span id="predInfoText">Tik op het plusje om een middel toe te voegen aan je bestelling.</span>
+      </div>
+      <div id="predView"></div>
     </div>
-    <div class="pred-info">
-      <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
-      <span id="predInfoText">Berekend op basis van bestelpatronen.</span>
+
+    <!-- SUB-TAB 2: HANDMATIG -->
+    <div id="bpanel-handmatig" style="display:none">
+      <div class="form-section">
+        <h3><i class="ti ti-edit"></i> Handmatig toevoegen</h3>
+        <div class="form-group form-group-rel">
+          <label>Soort</label>
+          <input type="text" id="bm_soort" placeholder="bijv. zeugen" autocomplete="off">
+          <div class="suggestions-list" id="sug_bm_soort" style="display:none"></div>
+        </div>
+        <div class="form-group form-group-rel">
+          <label>Omschrijving</label>
+          <input type="text" id="bm_omschrijving" placeholder="bijv. Depocilline 100 ml" autocomplete="off">
+          <div class="suggestions-list" id="sug_bm_omschrijving" style="display:none"></div>
+        </div>
+        <div class="form-group">
+          <label>Aantal</label>
+          <input type="number" id="bm_aantal" min="1" placeholder="5" inputmode="numeric">
+        </div>
+        <div id="bmStatus" class="status-box"></div>
+        <button class="btn btn-primary btn-block" onclick="addHandmatigToBestelling()"><i class="ti ti-plus"></i> Toevoegen aan bestelling</button>
+      </div>
     </div>
-    <div id="predView"></div>
+
+    <!-- SUB-TAB 3: BESTELOVERZICHT -->
+    <div id="bpanel-overzicht" style="display:none">
+      <div id="bestelStatus" class="status-box"></div>
+      <div id="bestelView"></div>
+      <div id="bestelGeplaatst" style="display:none;margin-top:8px">
+        <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
+      </div>
+    </div>
 
   </div>
 
@@ -501,71 +528,92 @@ function switchTab(name){
     document.getElementById('tab-'+t).classList.toggle('active',t===name);
     document.getElementById('nav-'+t).classList.toggle('active',t===name);
   });
-  if(name==='bestelling'){renderPrediction();renderBestelLijst();}
+  if(name==='bestelling'){renderPrediction();updateBestelTeller();}
   hideSuggestions();
   document.querySelector('.scroll-area').scrollTop=0;
 }
 
 // ── BESTELLIJST ───────────────────────────────────────────────────────────────
-function laadVoorspelling(){
-  const now=new Date();
-  const nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1);
-  const nextMonthNum=nextMonth.getMonth()+1, nextMonthYear=nextMonth.getFullYear();
-  if(!records.length){showBestelStatus('warning','Geen data beschikbaar voor voorspelling.');return;}
-  const merged=getMergedRecords(records);
-  const alleDatums=[...new Set(merged.map(r=>r.datum.substring(0,7)))].sort();
-  const aantalMaanden=alleDatums.length;
-  const middelenMap={};
-  for(const r of merged){const key=(r.soort||'')+'|||'+r.omschrijving;if(!middelenMap[key])middelenMap[key]={soort:r.soort,omschrijving:r.omschrijving,alle:[]};middelenMap[key].alle.push({...r,maand:parseInt(r.datum.split('-')[1])});}
-  let toegevoegd=0;
-  for(const key of Object.keys(middelenMap)){
-    const m=middelenMap[key];
-    const perMaandJaar={};for(const r of m.alle){const my=r.datum.substring(0,7);if(!perMaandJaar[my])perMaandJaar[my]=[];perMaandJaar[my].push(r.aantal);}
-    const alleAantallen=m.alle.map(r=>r.aantal);
-    const gemGlobaal=Math.round(alleAantallen.reduce((a,b)=>a+b,0)/alleAantallen.length);
-    const seizoenRecords=m.alle.filter(r=>{const mnd=parseInt(r.datum.split('-')[1]);const jaar=parseInt(r.datum.split('-')[0]);return jaar<nextMonthYear&&Math.abs(mnd-nextMonthNum)<=1;});
-    const heeftSeizoen=seizoenRecords.length>0;
-    const gemSeizoen=heeftSeizoen?Math.round(seizoenRecords.map(r=>r.aantal).reduce((a,b)=>a+b,0)/seizoenRecords.length):null;
-    const verwachtAantal=heeftSeizoen?Math.round(gemSeizoen*0.6+gemGlobaal*0.4):gemGlobaal;
-    // Voeg toe als nog niet in lijst
-    const al=bestelLijst.some(b=>b.soort===m.soort&&b.omschrijving===m.omschrijving);
-    if(!al){bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:m.soort,omschrijving:m.omschrijving,aantal:verwachtAantal});toegevoegd++;}
-  }
-  saveBestelLijst();
-  renderBestelLijst();
-  if(toegevoegd>0)showBestelStatus('success',toegevoegd+' middel(en) geladen uit voorspelling. Pas aantallen aan waar nodig.');
-  else showBestelStatus('info','Alle voorspelde middelen staan al in de lijst.');
+function switchBestelTab(name){
+  ['voorspelling','handmatig','overzicht'].forEach(t=>{
+    document.getElementById('bpanel-'+t).style.display=t===name?'block':'none';
+    document.getElementById('btab-'+t).classList.toggle('active',t===name);
+  });
+  if(name==='overzicht')renderBestelLijst();
 }
 
 function voegPredToeAanBestelling(encoded, btn){
   const p=JSON.parse(decodeURIComponent(encoded));
-  const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving);
-  if(al){return;}
-  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:p.soort,omschrijving:p.omschrijving,aantal:p.aantal});
+  const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
+  if(al)return;
+  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:p.soort,omschrijving:p.omschrijving,aantal:p.aantal,bron:'voorspelling'});
   saveBestelLijst();
-  // Verander knop naar vinkje
+  updateBestelTeller();
   btn.innerHTML='<i class="ti ti-check"></i>';
   btn.classList.add('btn-pred-add-done');
-  btn.disabled=true;
+  btn.title='Klik om te deselecteren';
+  btn.onclick=function(){verwijderPredUitBestelling(p.soort,p.omschrijving,p.aantal,btn);};
+}
+
+function verwijderPredUitBestelling(soort,omschrijving,aantal,btn){
+  bestelLijst=bestelLijst.filter(b=>!(b.soort===soort&&b.omschrijving===omschrijving&&b.bron==='voorspelling'));
+  saveBestelLijst();
+  updateBestelTeller();
+  const encoded=encodeURIComponent(JSON.stringify({soort,omschrijving,aantal}));
+  btn.innerHTML='<i class="ti ti-plus"></i>';
+  btn.classList.remove('btn-pred-add-done');
+  btn.title='Toevoegen aan bestelling';
+  btn.onclick=function(){voegPredToeAanBestelling(encoded,btn);};
+}
+
+function addHandmatigToBestelling(){
+  const soort=document.getElementById('bm_soort').value.trim();
+  const omschrijving=document.getElementById('bm_omschrijving').value.trim();
+  const aantal=parseInt(document.getElementById('bm_aantal').value);
+  const ms=document.getElementById('bmStatus');
+  if(!omschrijving||isNaN(aantal)||aantal<1){ms.className='status-box show status-warning';ms.textContent='Vul minimaal omschrijving en aantal in.';return;}
+  if(bestelLijst.some(b=>b.soort===soort&&b.omschrijving===omschrijving)){ms.className='status-box show status-warning';ms.textContent='Dit middel staat al in de bestelling.';return;}
+  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort,omschrijving,aantal,bron:'handmatig'});
+  saveBestelLijst();
+  updateBestelTeller();
+  ms.className='status-box show status-success';ms.textContent='Toegevoegd!';
+  document.getElementById('bm_soort').value='';
+  document.getElementById('bm_omschrijving').value='';
+  document.getElementById('bm_aantal').value='';
+}
+
+function updateBestelTeller(){
+  const t=document.getElementById('bestelTeller');
+  if(!t)return;
+  if(bestelLijst.length>0){t.style.display='inline';t.textContent=bestelLijst.length;}
+  else t.style.display='none';
 }
 
 function renderBestelLijst(){
   const view=document.getElementById('bestelView');
   const btn=document.getElementById('bestelGeplaatst');
+  if(!view)return;
   if(!bestelLijst.length){
-    view.innerHTML='<div class="empty"><i class="ti ti-shopping-cart"></i>Nog geen regels.<br>Laad uit voorspelling of voeg handmatig toe.</div>';
-    btn.style.display='none';
+    view.innerHTML='<div class="empty"><i class="ti ti-shopping-cart"></i>Nog geen bestellingen.<br>Selecteer middelen in de voorspelling of voeg handmatig toe.</div>';
+    if(btn)btn.style.display='none';
     return;
   }
-  btn.style.display='block';
+  if(btn)btn.style.display='block';
   const sorted=sortRows(bestelLijst);
   const byGroep={};
   sorted.forEach(r=>{const s=r.soort||'';if(!byGroep[s])byGroep[s]=[];byGroep[s].push(r);});
   const soortKeys=Object.keys(byGroep).sort((a,b)=>soortRank(a)-soortRank(b));
   view.innerHTML=soortKeys.map(soort=>{
     const rijen=byGroep[soort];
-    return'<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' regel(s)</span></div>'+
-      rijen.map(r=>'<div class="bestel-row"><div><div class="bestel-name">'+r.omschrijving+'</div></div><input class="bestel-aantal-input" type="number" min="1" value="'+r.aantal+'" inputmode="numeric" onchange="updateBestelAantal(\''+r.id+'\',this.value)" onblur="updateBestelAantal(\''+r.id+'\',this.value)"><button class="icon-btn del" onclick="removeBestelRegel(\''+r.id+'\')"><i class="ti ti-trash"></i></button></div>').join('')+
+    return'<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
+      rijen.map(r=>{
+        const bronLabel=r.bron==='voorspelling'
+          ?'<span class="basis-tag" style="color:var(--text-info);border-color:#bcd0f5;background:var(--bg-info)"><i class="ti ti-sparkles"></i> voorspelling</span>'
+          :'<span class="basis-tag" style="color:var(--soort-zeug-text);border-color:var(--soort-zeug-border);background:var(--soort-zeug)"><i class="ti ti-edit"></i> handmatig</span>';
+        return'<div class="bestel-row"><div><div class="bestel-name">'+r.omschrijving+'</div><div style="margin-top:3px">'+bronLabel+'</div></div>'+
+          '<input class="bestel-aantal-input" type="number" min="1" value="'+r.aantal+'" inputmode="numeric" onchange="updateBestelAantal(''+r.id+'',this.value)">'+
+          '<button class="icon-btn del" onclick="removeBestelRegel(''+r.id+'')"><i class="ti ti-trash"></i></button></div>';
+      }).join('')+
       '</div>';
   }).join('');
 }
@@ -576,37 +624,29 @@ function updateBestelAantal(id,val){
 }
 
 function removeBestelRegel(id){
+  const r=bestelLijst.find(x=>x.id===id);
   bestelLijst=bestelLijst.filter(x=>x.id!==id);
-  saveBestelLijst();renderBestelLijst();
-}
-
-function openBestelToevoegen(){
-  document.getElementById('bt_soort').value='';
-  document.getElementById('bt_omschrijving').value='';
-  document.getElementById('bt_aantal').value='';
-  document.getElementById('bestelToevoegModal').classList.add('show');
-}
-function closeBestelToevoegen(){document.getElementById('bestelToevoegModal').classList.remove('show');}
-
-function addToBestellijst(){
-  const soort=document.getElementById('bt_soort').value.trim();
-  const omschrijving=document.getElementById('bt_omschrijving').value.trim();
-  const aantal=parseInt(document.getElementById('bt_aantal').value);
-  if(!omschrijving||isNaN(aantal)||aantal<1){alert('Vul minimaal omschrijving en aantal in.');return;}
-  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort,omschrijving,aantal});
-  saveBestelLijst();closeBestelToevoegen();renderBestelLijst();
+  saveBestelLijst();
+  updateBestelTeller();
+  renderBestelLijst();
+  if(r&&r.bron==='voorspelling')renderPrediction();
 }
 
 function confirmBestelGeplaatst(){document.getElementById('bestelBevestigModal').classList.add('show');}
 function closeBestelBevestig(){document.getElementById('bestelBevestigModal').classList.remove('show');}
-function bestelGeplaatst(){bestelLijst=[];saveBestelLijst();closeBestelBevestig();renderBestelLijst();showBestelStatus('success','Bestelling geplaatst! Lijst is leeggemaakt.');}
-
-function showBestelStatus(type,msg){const el=document.getElementById('bestelStatus');el.className='status-box show status-'+type;el.textContent=msg;}
+function bestelGeplaatst(){
+  bestelLijst=[];saveBestelLijst();updateBestelTeller();
+  closeBestelBevestig();renderBestelLijst();renderPrediction();
+  const s=document.getElementById('bestelStatus');
+  if(s){s.className='status-box show status-success';s.textContent='Bestelling geplaatst! Lijst is leeggemaakt.';}
+}
+function showBestelStatus(type,msg){const el=document.getElementById('bestelStatus');if(el){el.className='status-box show status-'+type;el.textContent=msg;}}
 
 // ── SUGGESTIES ────────────────────────────────────────────────────────────────
 function setupSuggestions(){
   setupField('m_soort','soort');setupField('m_omschrijving','omschrijving');
   setupField('bt_soort','soort');setupField('bt_omschrijving','omschrijving');
+  setupField('bm_soort','soort');setupField('bm_omschrijving','omschrijving');
 }
 function setupField(fieldId,type){
   const input=document.getElementById(fieldId);if(!input)return;
@@ -759,10 +799,11 @@ function renderPrediction(){
     html+='<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
       rijen.map(p=>{
         const dots=[1,2,3].map(i=>'<span class="dot'+(i<=p.zekerheidDots?' filled-'+p.zekerheid:'')+'"></span>').join('');
-        const alInLijst=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving);
+        const alInLijst=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
+        const enc=encodeURIComponent(JSON.stringify({soort:p.soort,omschrijving:p.omschrijving,aantal:p.verwachtAantal}));
         const btnHtml=alInLijst
-          ? '<button class="btn-pred-add btn-pred-add-done" disabled><i class="ti ti-check"></i></button>'
-          : '<button class="btn-pred-add" onclick="voegPredToeAanBestelling(\''+encodeURIComponent(JSON.stringify({soort:p.soort,omschrijving:p.omschrijving,aantal:p.verwachtAantal}))+'\',this)"><i class="ti ti-shopping-cart-plus"></i></button>';
+          ? '<button class="btn-pred-add btn-pred-add-done" title="Klik om te deselecteren" onclick="verwijderPredUitBestelling(\''+p.soort.replace(/'/g,"\\'")+'\',' + '\''+p.omschrijving.replace(/'/g,"\\'")+'\','+p.verwachtAantal+',this)"><i class="ti ti-check"></i></button>'
+          : '<button class="btn-pred-add" title="Toevoegen aan bestelling" onclick="voegPredToeAanBestelling(\''+enc+'\',this)"><i class="ti ti-plus"></i></button>';
         return'<div class="pred-item"><div class="pred-item-top"><span class="pred-item-name">'+p.omschrijving+'</span><div style="display:flex;align-items:center;gap:8px"><span class="pred-item-aantal">×'+p.verwachtAantal+'</span>'+btnHtml+'</div></div><div class="pred-item-meta"><span class="zeker-pill zeker-'+p.zekerheid+'"><span class="confidence-dots">'+dots+'</span> '+p.zekerheidLabel+'</span><span class="basis-tag">'+p.basis+'</span></div></div>';
       }).join('')+'</div>';
   }
