@@ -29,22 +29,21 @@
     --zeker-hoog: #eaf5ee; --zeker-hoog-text: #1a7a3a; --zeker-hoog-border: #86efac;
     --zeker-mid: #fef8e7; --zeker-mid-text: #8a6000; --zeker-mid-border: #fde68a;
     --zeker-laag: #fdf0f0; --zeker-laag-text: #b91c1c; --zeker-laag-border: #fca5a5;
-    --nav-height: 64px;
-    --header-height: 60px;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-height: 64px; --header-height: 60px; --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
   html, body { height: 100%; overflow: hidden; }
   body { font-family: 'Inter', sans-serif; background: var(--bg-secondary); color: var(--text); font-size: 15px; line-height: 1.5; }
-  .app-header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-height); background: var(--accent); color: #fff; display: flex; align-items: center; padding: 0 16px; gap: 12px; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,0.15); padding-top: env(safe-area-inset-top, 0); }
+  .app-header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-height); background: var(--accent); color: #fff; display: flex; align-items: center; padding: 0 16px; gap: 10px; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,0.15); padding-top: env(safe-area-inset-top, 0); }
   .app-header .icon { font-size: 22px; }
   .app-header h1 { font-size: 17px; font-weight: 600; flex: 1; }
-  .app-header .header-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit; }
-  .app-header .header-btn:active { background: rgba(255,255,255,0.25); }
+  .header-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit; white-space: nowrap; }
+  .header-btn:active { background: rgba(255,255,255,0.25); }
+  .header-btn.sync-ok { background: rgba(134,239,172,0.25); }
+  .header-btn.sync-err { background: rgba(252,165,165,0.25); }
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav-height) + var(--safe-bottom)); background: var(--bg); border-top: 0.5px solid var(--border); display: flex; align-items: flex-start; padding-top: 8px; z-index: 100; box-shadow: 0 -1px 8px rgba(0,0,0,0.06); }
   .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; border: none; background: transparent; cursor: pointer; color: var(--text-tertiary); font-family: inherit; font-size: 10px; font-weight: 500; }
   .nav-item .ti { font-size: 22px; }
   .nav-item.active { color: var(--accent); }
-  .nav-item:active { opacity: 0.7; }
   .scroll-area { position: fixed; top: var(--header-height); left: 0; right: 0; bottom: calc(var(--nav-height) + var(--safe-bottom)); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px 8px; }
   .panel { display: none; } .panel.active { display: block; }
   .card { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
@@ -83,7 +82,7 @@
   .preview-item.dup { background: var(--bg-warning); }
   .preview-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .preview-item-name { font-size: 13px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .preview-item-meta { font-size: 12px; color: var(--text-secondary); margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .preview-item-meta { font-size: 12px; margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
   .form-section { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 16px; margin-bottom: 12px; }
   .form-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--accent); }
   .form-group { margin-bottom: 12px; }
@@ -91,7 +90,6 @@
   .form-group input { width: 100%; padding: 11px 12px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); font-size: 15px; font-family: inherit; color: var(--text); background: var(--bg); outline: none; -webkit-appearance: none; }
   .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,90,142,0.1); }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  /* Suggesties werken op mobiel via touchstart */
   .form-group-rel { position: relative; }
   .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg); border: 0.5px solid var(--border-strong); border-radius: var(--radius); z-index: 500; max-height: 200px; overflow-y: auto; margin-top: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
   .suggestion-item { padding: 13px 14px; font-size: 14px; border-bottom: 0.5px solid var(--border); color: var(--text); cursor: pointer; }
@@ -144,6 +142,13 @@
   .modal-actions .btn { flex: 1; justify-content: center; }
   .hint { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
   .danger-zone { margin-top: 8px; }
+  .onedrive-status { background: var(--bg); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .onedrive-status .ti { font-size: 20px; }
+  .onedrive-status.connected { border-color: var(--zeker-hoog-border); background: var(--zeker-hoog); color: var(--zeker-hoog-text); }
+  .onedrive-status.disconnected { border-color: var(--zeker-laag-border); background: var(--zeker-laag); color: var(--zeker-laag-text); }
+  .onedrive-status.syncing { border-color: #bcd0f5; background: var(--bg-info); color: var(--text-info); }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -151,12 +156,16 @@
 <div class="app-header">
   <i class="ti ti-pill icon"></i>
   <h1>Medicatie</h1>
-  <button class="header-btn" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
+  <button class="header-btn" id="syncBtn" onclick="syncOneDrive()"><i class="ti ti-brand-onedrive"></i> <span id="syncLabel">OneDrive</span></button>
 </div>
 
 <div class="scroll-area">
   <!-- OVERZICHT -->
   <div id="tab-overzicht" class="panel active">
+    <div id="onedriveStatusBar" class="onedrive-status disconnected">
+      <i class="ti ti-brand-onedrive"></i>
+      <span id="onedriveStatusText">Niet verbonden met OneDrive — klik op OneDrive om in te loggen</span>
+    </div>
     <div class="filter-bar">
       <label><i class="ti ti-calendar"></i></label>
       <select id="dateSelect" onchange="selectDate(this.value)"><option value="">— Alle datums —</option></select>
@@ -197,7 +206,7 @@
           <button class="btn btn-sm btn-primary" onclick="importPreview()"><i class="ti ti-check"></i> Importeren</button>
         </div>
       </div>
-      <p class="hint"><i class="ti ti-info-circle"></i> Na importeren wordt automatisch een CSV gedownload.</p>
+      <p class="hint"><i class="ti ti-info-circle"></i> Na importeren wordt opgeslagen in OneDrive.</p>
       <div class="card" id="previewList"></div>
     </div>
   </div>
@@ -207,14 +216,8 @@
     <div class="form-section">
       <h3><i class="ti ti-edit"></i> Regel toevoegen</h3>
       <div class="form-row">
-        <div class="form-group">
-          <label>Afleverdatum</label>
-          <input type="date" id="m_datum">
-        </div>
-        <div class="form-group">
-          <label>Aantal</label>
-          <input type="number" id="m_aantal" min="1" placeholder="5" inputmode="numeric">
-        </div>
+        <div class="form-group"><label>Afleverdatum</label><input type="date" id="m_datum"></div>
+        <div class="form-group"><label>Aantal</label><input type="number" id="m_aantal" min="1" placeholder="5" inputmode="numeric"></div>
       </div>
       <div class="form-group form-group-rel">
         <label>Soort</label>
@@ -227,7 +230,7 @@
         <div class="suggestions-list" id="sug_m_omschrijving" style="display:none"></div>
       </div>
       <div id="manualStatus" class="status-box"></div>
-      <p class="hint"><i class="ti ti-info-circle"></i> Na toevoegen wordt automatisch een CSV gedownload.</p>
+      <p class="hint"><i class="ti ti-info-circle"></i> Na toevoegen wordt opgeslagen in OneDrive.</p>
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary btn-block" onclick="addManual()"><i class="ti ti-plus"></i> Toevoegen</button>
         <button class="btn btn-block" onclick="clearManual()" style="max-width:100px">Wissen</button>
@@ -236,7 +239,6 @@
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="switchTab('overzicht')" id="nav-overzicht"><i class="ti ti-list"></i><span>Overzicht</span></button>
   <button class="nav-item" onclick="switchTab('voorspelling')" id="nav-voorspelling"><i class="ti ti-chart-line"></i><span>Voorspelling</span></button>
@@ -244,7 +246,6 @@
   <button class="nav-item" onclick="switchTab('handmatig')" id="nav-handmatig"><i class="ti ti-edit"></i><span>Handmatig</span></button>
 </nav>
 
-<!-- EDIT MODAL -->
 <div class="modal-bg" id="editModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -266,19 +267,227 @@
 <script>
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
-const STORAGE_KEY='med_orders_v3', LOG_KEY='med_import_log_v3';
-let records=[], importLog=new Set(), previewRows=[], selectedDate=null, editId=null;
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// ── CONFIGURATIE ──────────────────────────────────────────────────────────────
+const CLIENT_ID = '0e01663b-070d-457a-bcae-a35fd7dc2ae9';
+const REDIRECT_URI = 'https://maud-janssen21.github.io/medicijnen_v2/';
+const SCOPES = 'Files.ReadWrite User.Read';
+const ONEDRIVE_FILE = 'medicatiebestellingen.csv';
+const STORAGE_KEY = 'med_orders_v3';
+const LOG_KEY = 'med_import_log_v3';
+const TOKEN_KEY = 'med_od_token';
+const TOKEN_EXP_KEY = 'med_od_token_exp';
 
-function loadData(){
-  try{const r=localStorage.getItem(STORAGE_KEY);if(r)records=JSON.parse(r);}catch(e){records=[];}
-  try{const l=localStorage.getItem(LOG_KEY);if(l)importLog=new Set(JSON.parse(l));}catch(e){importLog=new Set();}
-  renderAll();
-  setupSuggestions();
+let records = [], importLog = new Set(), previewRows = [], selectedDate = null, editId = null;
+let accessToken = null;
+let onedriveFileId = null;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── ONEDRIVE AUTH (PKCE) ──────────────────────────────────────────────────────
+async function generateCodeVerifier() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
-function saveData(){
-  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(records));localStorage.setItem(LOG_KEY,JSON.stringify([...importLog]));}catch(e){}
+async function generateCodeChallenge(verifier) {
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
+
+async function loginOneDrive() {
+  const verifier = await generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  sessionStorage.setItem('pkce_verifier', verifier);
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: REDIRECT_URI,
+    scope: SCOPES,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    response_mode: 'query'
+  });
+  window.location.href = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize?' + params;
+}
+
+async function handleAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (!code) return false;
+  // Verwijder code uit URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+  const verifier = sessionStorage.getItem('pkce_verifier');
+  if (!verifier) return false;
+  try {
+    const resp = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: REDIRECT_URI,
+        code_verifier: verifier,
+        scope: SCOPES
+      })
+    });
+    const data = await resp.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      const exp = Date.now() + (data.expires_in - 60) * 1000;
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      localStorage.setItem(TOKEN_EXP_KEY, String(exp));
+      sessionStorage.removeItem('pkce_verifier');
+      return true;
+    }
+  } catch(e) { console.error('Token fout:', e); }
+  return false;
+}
+
+function loadStoredToken() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const exp = parseInt(localStorage.getItem(TOKEN_EXP_KEY) || '0');
+  if (token && Date.now() < exp) { accessToken = token; return true; }
+  return false;
+}
+
+function isLoggedIn() { return !!accessToken; }
+
+async function syncOneDrive() {
+  if (!isLoggedIn()) { await loginOneDrive(); return; }
+  setOnedriveStatus('syncing', 'Synchroniseren...');
+  try {
+    await saveToOneDrive();
+    setOnedriveStatus('connected', 'Opgeslagen in OneDrive');
+  } catch(e) {
+    setOnedriveStatus('disconnected', 'Synchronisatie mislukt — probeer opnieuw');
+  }
+}
+
+function setOnedriveStatus(state, text) {
+  const bar = document.getElementById('onedriveStatusBar');
+  const txt = document.getElementById('onedriveStatusText');
+  const btn = document.getElementById('syncBtn');
+  const lbl = document.getElementById('syncLabel');
+  bar.className = 'onedrive-status ' + state;
+  txt.textContent = text;
+  if (state === 'connected') { btn.className = 'header-btn sync-ok'; lbl.textContent = 'Gesynchroniseerd'; }
+  else if (state === 'syncing') { btn.className = 'header-btn'; lbl.innerHTML = '<span class="spin">↻</span> Bezig...'; }
+  else { btn.className = 'header-btn sync-err'; lbl.textContent = 'Inloggen'; }
+}
+
+// ── ONEDRIVE LEZEN / SCHRIJVEN ────────────────────────────────────────────────
+async function loadFromOneDrive() {
+  if (!accessToken) return false;
+  setOnedriveStatus('syncing', 'Data laden uit OneDrive...');
+  try {
+    // Zoek bestand
+    const searchResp = await fetch(
+      "https://graph.microsoft.com/v1.0/me/drive/root/children?$filter=name eq '" + ONEDRIVE_FILE + "'",
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    const searchData = await searchResp.json();
+    if (searchData.value && searchData.value.length > 0) {
+      onedriveFileId = searchData.value[0].id;
+      // Download inhoud
+      const contentResp = await fetch(
+        'https://graph.microsoft.com/v1.0/me/drive/items/' + onedriveFileId + '/content',
+        { headers: { Authorization: 'Bearer ' + accessToken } }
+      );
+      const csvText = await contentResp.text();
+      parseCSVIntoRecords(csvText);
+      setOnedriveStatus('connected', 'Data geladen uit OneDrive (' + records.length + ' regels)');
+      return true;
+    } else {
+      setOnedriveStatus('connected', 'Ingelogd — nog geen bestand in OneDrive');
+      return true;
+    }
+  } catch(e) {
+    console.error('Laden mislukt:', e);
+    setOnedriveStatus('disconnected', 'Laden mislukt — lokale data wordt gebruikt');
+    return false;
+  }
+}
+
+function parseCSVIntoRecords(csvText) {
+  const lines = csvText.replace(/^\uFEFF/,'').split('\n').filter(l => l.trim());
+  if (lines.length < 2) return;
+  records = [];
+  importLog = new Set();
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split(';');
+    if (parts.length < 4) continue;
+    const datumRaw = parts[0].trim();
+    // Zet dd-mm-yyyy om naar yyyy-mm-dd
+    const dp = datumRaw.split('-');
+    const datum = dp.length === 3 && dp[2].length === 4
+      ? dp[2]+'-'+dp[1].padStart(2,'0')+'-'+dp[0].padStart(2,'0')
+      : datumRaw;
+    const soort = parts[1].trim();
+    const omschrijving = parts[2].trim();
+    const aantal = parseInt(parts[3].trim());
+    if (!datum || !omschrijving || isNaN(aantal)) continue;
+    const rec = { datum, soort, omschrijving, aantal, id: Date.now()+'_'+Math.random() };
+    records.push(rec);
+    importLog.add(makeKey(rec));
+  }
+  // Sla ook lokaal op als backup
+  saveLocally();
+}
+
+async function saveToOneDrive() {
+  if (!accessToken) throw new Error('Niet ingelogd');
+  const csv = buildCSV();
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+
+  let url;
+  if (onedriveFileId) {
+    url = 'https://graph.microsoft.com/v1.0/me/drive/items/' + onedriveFileId + '/content';
+  } else {
+    url = 'https://graph.microsoft.com/v1.0/me/drive/root:/' + ONEDRIVE_FILE + ':/content';
+  }
+
+  const resp = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: 'Bearer ' + accessToken,
+      'Content-Type': 'text/csv'
+    },
+    body: blob
+  });
+  if (!resp.ok) throw new Error('Opslaan mislukt: ' + resp.status);
+  const data = await resp.json();
+  onedriveFileId = data.id;
+  saveLocally();
+  setOnedriveStatus('connected', 'Opgeslagen in OneDrive — ' + new Date().toLocaleTimeString('nl-NL'));
+}
+
+function buildCSV() {
+  const merged = getMergedRecords(records);
+  const sorted = merged.sort((a,b) => a.datum.localeCompare(b.datum)||soortRank(a.soort)-soortRank(b.soort)||a.omschrijving.localeCompare(b.omschrijving,'nl'));
+  const rows = sorted.map(r => fmtDate(r.datum)+';'+(r.soort||'')+';'+r.omschrijving+';'+r.aantal);
+  return 'Afleverdatum;Soort;Omschrijving;Aantal\n'+rows.join('\n');
+}
+
+// ── LOKALE OPSLAG (backup) ────────────────────────────────────────────────────
+function saveLocally() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); localStorage.setItem(LOG_KEY, JSON.stringify([...importLog])); } catch(e) {}
+}
+function loadLocally() {
+  try { const r=localStorage.getItem(STORAGE_KEY); if(r) records=JSON.parse(r); } catch(e) { records=[]; }
+  try { const l=localStorage.getItem(LOG_KEY); if(l) importLog=new Set(JSON.parse(l)); } catch(e) { importLog=new Set(); }
+}
+
+async function saveData() {
+  saveLocally();
+  if (isLoggedIn()) {
+    try { await saveToOneDrive(); }
+    catch(e) { setOnedriveStatus('disconnected', 'Lokaal opgeslagen — OneDrive sync mislukt'); }
+  }
+}
+
+// ── HULPFUNCTIES ──────────────────────────────────────────────────────────────
 function makeKey(r){return[r.datum,r.soort,r.omschrijving,String(r.aantal)].join('|').toLowerCase().trim();}
 function isDuplicate(row){return importLog.has(makeKey(row));}
 function mergeKey(r){return[r.datum,(r.soort||'').toLowerCase().trim(),r.omschrijving.toLowerCase().trim()].join('|||');}
@@ -293,7 +502,10 @@ function sortRows(rows){return rows.slice().sort((a,b)=>{const sr=soortRank(a.so
 function soortClass(s){if(!s)return'soort-other';const v=s.toLowerCase();if(v.includes('zeug'))return'soort-zeug';if(v.includes('vlees'))return'soort-vlees';if(v.includes('big'))return'soort-big';return'soort-other';}
 function soortPill(s){if(!s)return'<span style="color:var(--text-tertiary)">–</span>';return'<span class="soort-pill '+soortClass(s)+'">'+s+'</span>';}
 function soortHeaderStyle(s){if(!s)return'background:var(--soort-other);border-bottom:2px solid var(--soort-other-border);';const v=s.toLowerCase();if(v.includes('zeug'))return'background:var(--soort-zeug);border-bottom:2px solid var(--soort-zeug-border);';if(v.includes('vlees'))return'background:var(--soort-vlees);border-bottom:2px solid var(--soort-vlees-border);';if(v.includes('big'))return'background:var(--soort-big);border-bottom:2px solid var(--soort-big-border);';return'background:var(--soort-other);border-bottom:2px solid var(--soort-other-border);';}
+function normDate(d){const p=d.split(/[-\/]/);return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):d;}
+function fmtDate(iso){if(!iso)return'–';const p=iso.split('-');return p.length===3?p[2]+'-'+p[1]+'-'+p[0]:iso;}
 
+// ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(name){
   ['overzicht','voorspelling','upload','handmatig'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('active',t===name);
@@ -304,39 +516,17 @@ function switchTab(name){
   document.querySelector('.scroll-area').scrollTop=0;
 }
 
-// ── SUGGESTIES (mobiel-vriendelijk) ───────────────────────────────────────────
-function setupSuggestions(){
-  setupField('m_soort','soort');
-  setupField('m_omschrijving','omschrijving');
-}
-
-function setupField(fieldId, type){
+// ── SUGGESTIES ────────────────────────────────────────────────────────────────
+function setupSuggestions(){setupField('m_soort','soort');setupField('m_omschrijving','omschrijving');}
+function setupField(fieldId,type){
   const input=document.getElementById(fieldId);
   const sugEl=document.getElementById('sug_'+fieldId);
-
-  // input event voor desktop
   input.addEventListener('input',()=>renderSuggestions(fieldId,type));
-  // keyup als backup voor mobiel
   input.addEventListener('keyup',()=>renderSuggestions(fieldId,type));
-  // focus toont ook suggesties als er al tekst staat
   input.addEventListener('focus',()=>{if(input.value.length>0)renderSuggestions(fieldId,type);});
-
-  // Tik op suggestie via touchstart (werkt beter dan click op mobiel)
-  sugEl.addEventListener('touchstart',e=>{
-    const item=e.target.closest('.suggestion-item');
-    if(item){
-      e.preventDefault();
-      input.value=item.dataset.value;
-      hideSuggestions();
-    }
-  },{passive:false});
-  // Click als fallback voor desktop
-  sugEl.addEventListener('click',e=>{
-    const item=e.target.closest('.suggestion-item');
-    if(item){input.value=item.dataset.value;hideSuggestions();}
-  });
+  sugEl.addEventListener('touchstart',e=>{const item=e.target.closest('.suggestion-item');if(item){e.preventDefault();input.value=item.dataset.value;hideSuggestions();}},{passive:false});
+  sugEl.addEventListener('click',e=>{const item=e.target.closest('.suggestion-item');if(item){input.value=item.dataset.value;hideSuggestions();}});
 }
-
 function renderSuggestions(fieldId,type){
   const val=document.getElementById(fieldId).value.toLowerCase();
   const sugEl=document.getElementById('sug_'+fieldId);
@@ -346,25 +536,9 @@ function renderSuggestions(fieldId,type){
   sugEl.innerHTML=unique.slice(0,6).map(v=>'<div class="suggestion-item" data-value="'+v.replace(/"/g,'&quot;')+'">'+v+'</div>').join('');
   sugEl.style.display='block';
 }
-
 function hideSuggestions(){document.querySelectorAll('.suggestions-list').forEach(s=>s.style.display='none');}
-// Sluit suggesties bij tik buiten het veld
 document.addEventListener('touchstart',e=>{if(!e.target.closest('.form-group-rel'))hideSuggestions();},{passive:true});
 document.addEventListener('click',e=>{if(!e.target.closest('.form-group-rel'))hideSuggestions();});
-
-// ── CSV ───────────────────────────────────────────────────────────────────────
-function downloadCSV(){
-  if(!records.length)return;
-  const merged=getMergedRecords(records);
-  const sorted=merged.sort((a,b)=>a.datum.localeCompare(b.datum)||soortRank(a.soort)-soortRank(b.soort)||a.omschrijving.localeCompare(b.omschrijving,'nl'));
-  const rows=sorted.map(r=>fmtDate(r.datum)+';'+(r.soort||'')+';'+r.omschrijving+';'+r.aantal);
-  const csv='Afleverdatum;Soort;Omschrijving;Aantal\n'+rows.join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='medicatiebestellingen_'+new Date().toISOString().slice(0,10)+'.csv';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-}
-function exportCSV(){if(!records.length){alert('Geen gegevens om te exporteren.');return;}downloadCSV();}
 
 // ── PDF ───────────────────────────────────────────────────────────────────────
 async function handleFiles(files){
@@ -427,9 +601,6 @@ async function parsePDF(file){
   return dataRows;
 }
 
-function normDate(d){const p=d.split(/[-\/]/);return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):d;}
-function fmtDate(iso){if(!iso)return'–';const p=iso.split('-');return p.length===3?p[2]+'-'+p[1]+'-'+p[0]:iso;}
-
 function renderPreview(){
   const newCount=previewRows.filter(r=>!isDuplicate(r)).length;
   document.getElementById('previewTitle').textContent=previewRows.length+' regel(s) — '+newCount+' nieuw, '+(previewRows.length-newCount)+' al aanwezig';
@@ -440,12 +611,12 @@ function renderPreview(){
   }).join('');
 }
 
-function importPreview(){
+async function importPreview(){
   const newRows=previewRows.filter(r=>!isDuplicate(r));
   if(!newRows.length){showUploadStatus('warning','Alle regels al eerder geïmporteerd.');clearPreview();return;}
   for(const r of newRows){records.push({...r,id:Date.now()+'_'+Math.random()});importLog.add(makeKey(r));}
-  saveData();downloadCSV();
-  showUploadStatus('success',newRows.length+' regel(s) geïmporteerd. CSV gedownload.');
+  await saveData();
+  showUploadStatus('success',newRows.length+' regel(s) geïmporteerd en opgeslagen.');
   clearPreview();renderAll();
   setTimeout(()=>switchTab('overzicht'),1200);
 }
@@ -453,7 +624,7 @@ function clearPreview(){previewRows=[];document.getElementById('previewSection')
 function showUploadStatus(type,msg){const el=document.getElementById('uploadStatus');el.className='status-box show status-'+type;el.textContent=msg;}
 
 // ── HANDMATIG ─────────────────────────────────────────────────────────────────
-function addManual(){
+async function addManual(){
   const datum=document.getElementById('m_datum').value;
   const soort=document.getElementById('m_soort').value.trim();
   const omschrijving=document.getElementById('m_omschrijving').value.trim();
@@ -464,16 +635,15 @@ function addManual(){
   if(isDuplicate(row)){ms.className='status-box show status-warning';ms.textContent='Deze combinatie staat al in de lijst.';return;}
   records.push({...row,id:Date.now()+'_'+Math.random()});
   importLog.add(makeKey(row));
-  saveData();downloadCSV();
+  await saveData();
   ms.className='status-box show status-success';
-  ms.textContent='Toegevoegd! CSV gedownload.';
+  ms.textContent='Toegevoegd en opgeslagen!';
   clearManual();renderAll();
 }
 function clearManual(){['m_datum','m_soort','m_omschrijving','m_aantal'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function renderAll(){renderDateDropdown();renderOrders();}
-
 function renderDateDropdown(){
   const dates=[...new Set(records.map(r=>r.datum))].sort((a,b)=>b.localeCompare(a));
   const sel=document.getElementById('dateSelect');
@@ -482,7 +652,6 @@ function renderDateDropdown(){
   if(selectedDate&&!dates.includes(selectedDate))selectedDate=null;
 }
 function selectDate(val){selectedDate=val||null;renderOrders();}
-
 function renderOrders(){
   const view=document.getElementById('orderView');
   if(!records.length){view.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Nog geen bestellingen.<br>Upload een PDF of voer handmatig in.</div>';return;}
@@ -498,18 +667,16 @@ function renderOrders(){
       rows.map(r=>{
         const id=r.ids?r.ids[0]:r.id;
         return'<div class="med-row"><div><div class="med-name">'+r.omschrijving+'</div><div class="med-soort">'+soortPill(r.soort)+'</div></div><div class="med-aantal">×'+r.aantal+'</div><div class="med-actions"><button class="icon-btn" data-id="'+id+'" onclick="openEdit(this.dataset.id)"><i class="ti ti-edit"></i></button><button class="icon-btn del" data-id="'+id+'" onclick="deleteRecord(this.dataset.id)"><i class="ti ti-trash"></i></button></div></div>';
-      }).join('')+
-      '</div></div>';
+      }).join('')+'</div></div>';
   }).join('');
 }
 
-// ── VOORSPELLING (versie 5 logica) ────────────────────────────────────────────
+// ── VOORSPELLING ──────────────────────────────────────────────────────────────
 function renderPrediction(){
   const view=document.getElementById('predView');
   const now=new Date();
   const nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1);
-  const nextMonthNum=nextMonth.getMonth()+1;
-  const nextMonthYear=nextMonth.getFullYear();
+  const nextMonthNum=nextMonth.getMonth()+1, nextMonthYear=nextMonth.getFullYear();
   const maandNamen=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
   document.getElementById('predSubtitle').textContent=maandNamen[nextMonth.getMonth()]+' '+nextMonthYear;
   if(!records.length){view.innerHTML='<div class="empty"><i class="ti ti-database-off"></i>Nog geen data beschikbaar.</div>';return;}
@@ -539,8 +706,7 @@ function renderPrediction(){
     if(frequentie>=0.75){zekerheid='hoog';zekerheidLabel='Hoog';zekerheidDots=3;}
     else if(frequentie>=0.4){zekerheid='mid';zekerheidLabel='Gemiddeld';zekerheidDots=2;}
     else{zekerheid='laag';zekerheidLabel='Laag';zekerheidDots=1;}
-    const basis=heeftSeizoen?'seizoen + historie':bestellingsMaanden+'x besteld';
-    predictions.push({...m,verwachtAantal,zekerheid,zekerheidLabel,zekerheidDots,basis,heeftSeizoen});
+    predictions.push({...m,verwachtAantal,zekerheid,zekerheidLabel,zekerheidDots,basis:heeftSeizoen?'seizoen + historie':bestellingsMaanden+'x besteld',heeftSeizoen});
   }
   document.getElementById('predInfoText').textContent='Gebaseerd op '+merged.length+' regels over '+aantalMaanden+' maand(en). '+(aantalMaanden<12?'Seizoensdata actief na 12 maanden.':'Seizoensdata actief.');
   const perSoort={};
@@ -549,13 +715,11 @@ function renderPrediction(){
   let html='';
   for(const soort of soortKeys){
     const rijen=perSoort[soort].slice().sort((a,b)=>a.omschrijving.localeCompare(b.omschrijving,'nl'));
-    const hs=soortHeaderStyle(soort);
-    html+='<div class="card"><div class="pred-card-header" style="'+hs+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
+    html+='<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
       rijen.map(p=>{
         const dots=[1,2,3].map(i=>'<span class="dot'+(i<=p.zekerheidDots?' filled-'+p.zekerheid:'')+'"></span>').join('');
         return'<div class="pred-item"><div class="pred-item-top"><span class="pred-item-name">'+p.omschrijving+'</span><span class="pred-item-aantal">×'+p.verwachtAantal+'</span></div><div class="pred-item-meta"><span class="zeker-pill zeker-'+p.zekerheid+'"><span class="confidence-dots">'+dots+'</span> '+p.zekerheidLabel+'</span><span class="basis-tag">'+p.basis+'</span></div></div>';
-      }).join('')+
-      '</div>';
+      }).join('')+'</div>';
   }
   view.innerHTML=html||'<div class="empty"><i class="ti ti-database-off"></i>Niet genoeg data voor een voorspelling.</div>';
 }
@@ -571,7 +735,7 @@ function openEdit(id){
   document.getElementById('editModal').classList.add('show');
 }
 function closeEdit(){editId=null;document.getElementById('editModal').classList.remove('show');}
-function saveEdit(){
+async function saveEdit(){
   const r=records.find(x=>String(x.id)===String(editId));
   if(!r)return;
   importLog.delete(makeKey(r));
@@ -580,21 +744,42 @@ function saveEdit(){
   r.omschrijving=document.getElementById('edit_omschrijving').value.trim();
   r.aantal=parseInt(document.getElementById('edit_aantal').value);
   importLog.add(makeKey(r));
-  saveData();closeEdit();renderAll();
+  await saveData();closeEdit();renderAll();
 }
-function deleteRecord(id){
+async function deleteRecord(id){
   if(!confirm('Deze regel verwijderen?'))return;
   const idx=records.findIndex(x=>String(x.id)===String(id));
   if(idx===-1)return;
   importLog.delete(makeKey(records[idx]));
   records.splice(idx,1);
-  saveData();renderAll();
+  await saveData();renderAll();
 }
-function confirmClearAll(){
-  if(confirm('Weet je zeker dat je ALLE bestellingen wilt verwijderen?')){records=[];importLog=new Set();selectedDate=null;saveData();renderAll();}
+async function confirmClearAll(){
+  if(confirm('Weet je zeker dat je ALLE bestellingen wilt verwijderen?')){
+    records=[];importLog=new Set();selectedDate=null;
+    await saveData();renderAll();
+  }
 }
 
-loadData();
+// ── OPSTARTEN ─────────────────────────────────────────────────────────────────
+async function init(){
+  // Check of we terugkomen van een Microsoft login
+  const loggedInViaCallback = await handleAuthCallback();
+
+  if (loggedInViaCallback || loadStoredToken()) {
+    // Ingelogd: laad data uit OneDrive
+    await loadFromOneDrive();
+  } else {
+    // Niet ingelogd: laad lokale backup
+    loadLocally();
+    setOnedriveStatus('disconnected', 'Niet verbonden — tik op OneDrive om in te loggen');
+  }
+
+  renderAll();
+  setupSuggestions();
+}
+
+init();
 </script>
 </body>
 </html>
