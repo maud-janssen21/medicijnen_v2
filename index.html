@@ -308,7 +308,7 @@ async function loginOneDrive() {
     code_challenge_method: 'S256',
     response_mode: 'query'
   });
-  window.location.href = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize?' + params;
+  window.location.href = 'https://login.microsoftonline.com/1bd7f06f-0ca0-457f-95f2-5a0dc19e6f3e/oauth2/v2.0/authorize?' + params;
 }
 
 async function handleAuthCallback() {
@@ -320,7 +320,7 @@ async function handleAuthCallback() {
   const verifier = sessionStorage.getItem('pkce_verifier');
   if (!verifier) return false;
   try {
-    const resp = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+    const resp = await fetch('https://login.microsoftonline.com/1bd7f06f-0ca0-457f-95f2-5a0dc19e6f3e/oauth2/v2.0/token', {
       method: 'POST',
       headers: {'Content-Type':'application/x-www-form-urlencoded'},
       body: new URLSearchParams({
