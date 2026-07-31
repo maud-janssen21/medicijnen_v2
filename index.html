@@ -197,18 +197,7 @@
     </div>
   </div>
 
-  <!-- TAB 2: NIEUWE BESTELLING -->
-  <div id="tab-bestelling" class="panel">
-    <div class="bestel-toolbar">
-      <button class="btn btn-primary" onclick="switchTab('voorspelling')"><i class="ti ti-sparkles"></i> Ga naar voorspelling</button>
-      <button class="btn" onclick="openBestelToevoegen()"><i class="ti ti-plus"></i> Toevoegen</button>
-    </div>
-    <div id="bestelStatus" class="status-box"></div>
-    <div id="bestelView"></div>
-    <div class="bestel-geplaatst-btn" id="bestelGeplaatst" style="display:none">
-      <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
-    </div>
-  </div>
+  <!-- TAB 2: INVOER (moved up, placeholder) -->
 
   <!-- TAB 2: INVOER -->
   <div id="tab-invoer" class="panel">
@@ -269,16 +258,27 @@
 
   <!-- TAB 3: BESTELLING -->
   <div id="tab-bestelling" class="panel">
-  <div id="tab-voorspelling" class="panel">
-    <div class="pred-header-card">
-      <h2><i class="ti ti-sparkles"></i> Voorspelling</h2>
-      <p id="predSubtitle">Volgende maand</p>
+    <!-- Voorspelling ingebed in bestelling -->
+    <div class="pred-header-card" style="margin-bottom:12px">
+      <h2><i class="ti ti-sparkles"></i> Voorspelling volgende maand</h2>
+      <p id="predSubtitle">Tik op het winkelwagen-icoontje om toe te voegen</p>
     </div>
     <div class="pred-info">
       <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
       <span id="predInfoText">Berekend op basis van bestelpatronen.</span>
     </div>
-    <div id="predView"></div>
+    <div id="predView" style="margin-bottom:16px"></div>
+
+    <!-- Bestellijst -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <strong style="font-size:14px"><i class="ti ti-shopping-cart"></i> Bestellijst</strong>
+      <button class="btn btn-sm" onclick="openBestelToevoegen()"><i class="ti ti-plus"></i> Handmatig</button>
+    </div>
+    <div id="bestelStatus" class="status-box"></div>
+    <div id="bestelView"></div>
+    <div class="bestel-geplaatst-btn" id="bestelGeplaatst" style="display:none">
+      <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
+    </div>
   </div>
 
 </div>
@@ -288,7 +288,6 @@
   <button class="nav-item active" onclick="switchTab('overzicht')" id="nav-overzicht"><i class="ti ti-list"></i><span>Overzicht</span></button>
   <button class="nav-item" onclick="switchTab('invoer')" id="nav-invoer"><i class="ti ti-file-plus"></i><span>Invoer</span></button>
   <button class="nav-item" onclick="switchTab('bestelling')" id="nav-bestelling"><i class="ti ti-shopping-cart"></i><span>Bestelling</span></button>
-  <button class="nav-item" onclick="switchTab('voorspelling')" id="nav-voorspelling"><i class="ti ti-chart-line"></i><span>Voorspelling</span></button>
 </nav>
 
 <!-- EDIT OVERZICHT MODAL -->
@@ -496,12 +495,11 @@ function switchInvoerTab(name){
 }
 
 function switchTab(name){
-  ['overzicht','invoer','bestelling','voorspelling'].forEach(t=>{
+  ['overzicht','invoer','bestelling'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('active',t===name);
     document.getElementById('nav-'+t).classList.toggle('active',t===name);
   });
-  if(name==='voorspelling')renderPrediction();
-  if(name==='bestelling')renderBestelLijst();
+  if(name==='bestelling'){renderPrediction();renderBestelLijst();}
   hideSuggestions();
   document.querySelector('.scroll-area').scrollTop=0;
 }
