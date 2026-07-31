@@ -162,6 +162,9 @@
   .bestel-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
   .bestel-toolbar .btn { flex: 1; justify-content: center; font-size: 13px; padding: 10px; }
   .bestel-geplaatst-btn { margin-top: 4px; }
+  .btn-pred-add { width: 34px; height: 34px; border: 0.5px solid var(--accent); border-radius: 8px; background: var(--accent-light); color: var(--accent); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; transition: all 0.15s; }
+  .btn-pred-add:active { background: var(--accent); color: #fff; }
+  .btn-pred-add-done { background: var(--zeker-hoog); border-color: var(--zeker-hoog-border); color: var(--zeker-hoog-text); cursor: default; }
 </style>
 </head>
 <body>
@@ -193,7 +196,7 @@
   <!-- TAB 2: NIEUWE BESTELLING -->
   <div id="tab-bestelling" class="panel">
     <div class="bestel-toolbar">
-      <button class="btn btn-primary" onclick="laadVoorspelling()"><i class="ti ti-sparkles"></i> Laad uit voorspelling</button>
+      <button class="btn btn-primary" onclick="switchTab('voorspelling')"><i class="ti ti-sparkles"></i> Ga naar voorspelling</button>
       <button class="btn" onclick="openBestelToevoegen()"><i class="ti ti-plus"></i> Toevoegen</button>
     </div>
     <div id="bestelStatus" class="status-box"></div>
@@ -515,6 +518,18 @@ function laadVoorspelling(){
   else showBestelStatus('info','Alle voorspelde middelen staan al in de lijst.');
 }
 
+function voegPredToeAanBestelling(encoded, btn){
+  const p=JSON.parse(decodeURIComponent(encoded));
+  const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving);
+  if(al){return;}
+  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:p.soort,omschrijving:p.omschrijving,aantal:p.aantal});
+  saveBestelLijst();
+  // Verander knop naar vinkje
+  btn.innerHTML='<i class="ti ti-check"></i>';
+  btn.classList.add('btn-pred-add-done');
+  btn.disabled=true;
+}
+
 function renderBestelLijst(){
   const view=document.getElementById('bestelView');
   const btn=document.getElementById('bestelGeplaatst');
@@ -722,7 +737,14 @@ function renderPrediction(){
   for(const soort of soortKeys){
     const rijen=perSoort[soort].slice().sort((a,b)=>a.omschrijving.localeCompare(b.omschrijving,'nl'));
     html+='<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
-      rijen.map(p=>{const dots=[1,2,3].map(i=>'<span class="dot'+(i<=p.zekerheidDots?' filled-'+p.zekerheid:'')+'"></span>').join('');return'<div class="pred-item"><div class="pred-item-top"><span class="pred-item-name">'+p.omschrijving+'</span><span class="pred-item-aantal">×'+p.verwachtAantal+'</span></div><div class="pred-item-meta"><span class="zeker-pill zeker-'+p.zekerheid+'"><span class="confidence-dots">'+dots+'</span> '+p.zekerheidLabel+'</span><span class="basis-tag">'+p.basis+'</span></div></div>';}).join('')+'</div>';
+      rijen.map(p=>{
+        const dots=[1,2,3].map(i=>'<span class="dot'+(i<=p.zekerheidDots?' filled-'+p.zekerheid:'')+'"></span>').join('');
+        const alInLijst=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving);
+        const btnHtml=alInLijst
+          ? '<button class="btn-pred-add btn-pred-add-done" disabled><i class="ti ti-check"></i></button>'
+          : '<button class="btn-pred-add" onclick="voegPredToeAanBestelling(\''+encodeURIComponent(JSON.stringify({soort:p.soort,omschrijving:p.omschrijving,aantal:p.verwachtAantal}))+'\',this)"><i class="ti ti-shopping-cart-plus"></i></button>';
+        return'<div class="pred-item"><div class="pred-item-top"><span class="pred-item-name">'+p.omschrijving+'</span><div style="display:flex;align-items:center;gap:8px"><span class="pred-item-aantal">×'+p.verwachtAantal+'</span>'+btnHtml+'</div></div><div class="pred-item-meta"><span class="zeker-pill zeker-'+p.zekerheid+'"><span class="confidence-dots">'+dots+'</span> '+p.zekerheidLabel+'</span><span class="basis-tag">'+p.basis+'</span></div></div>';
+      }).join('')+'</div>';
   }
   view.innerHTML=html||'<div class="empty"><i class="ti ti-database-off"></i>Niet genoeg data voor een voorspelling.</div>';
 }
