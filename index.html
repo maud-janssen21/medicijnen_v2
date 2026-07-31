@@ -162,6 +162,7 @@
   .bestel-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
   .bestel-toolbar .btn { flex: 1; justify-content: center; font-size: 13px; padding: 10px; }
   .bestel-geplaatst-btn { margin-top: 4px; }
+  .bestel-sectie-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 8px; margin-bottom: 8px; border-bottom: 1.5px solid var(--border); font-size: 14px; font-weight: 600; color: var(--accent); }
   .btn-pred-add { width: 34px; height: 34px; border: 0.5px solid var(--accent); border-radius: 8px; background: var(--accent-light); color: var(--accent); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; transition: all 0.15s; }
   .btn-pred-add:active { background: var(--accent); color: #fff; }
   .btn-pred-add-done { background: var(--zeker-hoog); border-color: var(--zeker-hoog-border); color: var(--zeker-hoog-text); cursor: default; }
@@ -258,27 +259,28 @@
 
   <!-- TAB 3: BESTELLING -->
   <div id="tab-bestelling" class="panel">
-    <!-- Voorspelling ingebed in bestelling -->
-    <div class="pred-header-card" style="margin-bottom:12px">
-      <h2><i class="ti ti-sparkles"></i> Voorspelling volgende maand</h2>
-      <p id="predSubtitle">Tik op het winkelwagen-icoontje om toe te voegen</p>
+
+    <!-- SECTIE 1: MIJN BESTELLING -->
+    <div class="bestel-sectie-header">
+      <span><i class="ti ti-shopping-cart"></i> Mijn bestelling</span>
+      <button class="btn btn-sm" onclick="openBestelToevoegen()"><i class="ti ti-plus"></i> Handmatig toevoegen</button>
+    </div>
+    <div id="bestelStatus" class="status-box"></div>
+    <div id="bestelView"></div>
+    <div class="bestel-geplaatst-btn" id="bestelGeplaatst" style="display:none;margin-bottom:20px">
+      <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
+    </div>
+
+    <!-- SECTIE 2: VOORSPELLING -->
+    <div class="bestel-sectie-header" style="margin-top:8px">
+      <span><i class="ti ti-sparkles"></i> Voorspelling volgende maand</span>
     </div>
     <div class="pred-info">
       <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
       <span id="predInfoText">Berekend op basis van bestelpatronen.</span>
     </div>
-    <div id="predView" style="margin-bottom:16px"></div>
+    <div id="predView"></div>
 
-    <!-- Bestellijst -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <strong style="font-size:14px"><i class="ti ti-shopping-cart"></i> Bestellijst</strong>
-      <button class="btn btn-sm" onclick="openBestelToevoegen()"><i class="ti ti-plus"></i> Handmatig</button>
-    </div>
-    <div id="bestelStatus" class="status-box"></div>
-    <div id="bestelView"></div>
-    <div class="bestel-geplaatst-btn" id="bestelGeplaatst" style="display:none">
-      <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
-    </div>
   </div>
 
 </div>
@@ -726,7 +728,8 @@ function renderPrediction(){
   const now=new Date();const nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1);
   const nextMonthNum=nextMonth.getMonth()+1,nextMonthYear=nextMonth.getFullYear();
   const maandNamen=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
-  document.getElementById('predSubtitle').textContent=maandNamen[nextMonth.getMonth()]+' '+nextMonthYear;
+  const infoEl=document.getElementById('predInfoText');
+  if(infoEl)infoEl.textContent='Voorspelling voor '+maandNamen[nextMonth.getMonth()]+' '+nextMonthYear+'. Gebaseerd op '+merged.length+' regels over '+aantalMaanden+' maand(en). '+(aantalMaanden<12?'Seizoensdata actief na 12 maanden.':'Seizoensdata actief.');
   if(!records.length){view.innerHTML='<div class="empty"><i class="ti ti-database-off"></i>Nog geen data beschikbaar.</div>';return;}
   const merged=getMergedRecords(records);
   const alleDatums=[...new Set(merged.map(r=>r.datum.substring(0,7)))].sort();
@@ -747,7 +750,7 @@ function renderPrediction(){
     if(frequentie>=0.75){zekerheid='hoog';zekerheidLabel='Hoog';zekerheidDots=3;}else if(frequentie>=0.4){zekerheid='mid';zekerheidLabel='Gemiddeld';zekerheidDots=2;}else{zekerheid='laag';zekerheidLabel='Laag';zekerheidDots=1;}
     predictions.push({...m,verwachtAantal,zekerheid,zekerheidLabel,zekerheidDots,basis:heeftSeizoen?'seizoen + historie':bestellingsMaanden+'x besteld',heeftSeizoen});
   }
-  document.getElementById('predInfoText').textContent='Gebaseerd op '+merged.length+' regels over '+aantalMaanden+' maand(en). '+(aantalMaanden<12?'Seizoensdata actief na 12 maanden.':'Seizoensdata actief.');
+  
   const perSoort={};for(const p of predictions){const s=p.soort||'';if(!perSoort[s])perSoort[s]=[];perSoort[s].push(p);}
   const soortKeys=Object.keys(perSoort).sort((a,b)=>soortRank(a)-soortRank(b)||a.localeCompare(b,'nl'));
   let html='';
