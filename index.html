@@ -542,6 +542,27 @@ function switchBestelTab(name){
   if(name==='overzicht')renderBestelLijst();
 }
 
+function handlePredBtn(btn){
+  const enc=btn.getAttribute('data-enc');
+  const p=JSON.parse(decodeURIComponent(enc));
+  const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
+  if(al){
+    // Deselecteren
+    bestelLijst=bestelLijst.filter(b=>!(b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling'));
+    saveBestelLijst();updateBestelTeller();
+    btn.innerHTML='<i class="ti ti-plus"></i>';
+    btn.classList.remove('btn-pred-add-done');
+    btn.title='Toevoegen aan bestelling';
+  } else {
+    // Toevoegen
+    bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:p.soort,omschrijving:p.omschrijving,aantal:p.aantal,bron:'voorspelling'});
+    saveBestelLijst();updateBestelTeller();
+    btn.innerHTML='<i class="ti ti-check"></i>';
+    btn.classList.add('btn-pred-add-done');
+    btn.title='Klik om te deselecteren';
+  }
+}
+
 function voegPredToeAanBestelling(encoded, btn){
   const p=JSON.parse(decodeURIComponent(encoded));
   const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
@@ -611,8 +632,8 @@ function renderBestelLijst(){
           ?'<span class="basis-tag" style="color:var(--text-info);border-color:#bcd0f5;background:var(--bg-info)"><i class="ti ti-sparkles"></i> voorspelling</span>'
           :'<span class="basis-tag" style="color:var(--soort-zeug-text);border-color:var(--soort-zeug-border);background:var(--soort-zeug)"><i class="ti ti-edit"></i> handmatig</span>';
         return'<div class="bestel-row"><div><div class="bestel-name">'+r.omschrijving+'</div><div style="margin-top:3px">'+bronLabel+'</div></div>'+
-          '<input class="bestel-aantal-input" type="number" min="1" value="'+r.aantal+'" inputmode="numeric" onchange="updateBestelAantal(''+r.id+'',this.value)">'+
-          '<button class="icon-btn del" onclick="removeBestelRegel(''+r.id+'')"><i class="ti ti-trash"></i></button></div>';
+          '<input class="bestel-aantal-input" type="number" min="1" value="'+r.aantal+'" inputmode="numeric" onchange="updateBestelAantal(\'' + r.id + '\',this.value)">'+
+          '<button class="icon-btn del" onclick="removeBestelRegel(\'' + r.id + '\')"><i class="ti ti-trash"></i></button></div>';
       }).join('')+
       '</div>';
   }).join('');
@@ -802,8 +823,8 @@ function renderPrediction(){
         const alInLijst=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
         const enc=encodeURIComponent(JSON.stringify({soort:p.soort,omschrijving:p.omschrijving,aantal:p.verwachtAantal}));
         const btnHtml=alInLijst
-          ? '<button class="btn-pred-add btn-pred-add-done" title="Klik om te deselecteren" onclick="verwijderPredUitBestelling(\''+p.soort.replace(/'/g,"\\'")+'\',' + '\''+p.omschrijving.replace(/'/g,"\\'")+'\','+p.verwachtAantal+',this)"><i class="ti ti-check"></i></button>'
-          : '<button class="btn-pred-add" title="Toevoegen aan bestelling" onclick="voegPredToeAanBestelling(\''+enc+'\',this)"><i class="ti ti-plus"></i></button>';
+          ? '<button class="btn-pred-add btn-pred-add-done" title="Klik om te deselecteren" data-enc="'+enc+'" onclick="handlePredBtn(this)"><i class="ti ti-check"></i></button>'
+          : '<button class="btn-pred-add" title="Toevoegen aan bestelling" data-enc="'+enc+'" onclick="handlePredBtn(this)"><i class="ti ti-plus"></i></button>';
         return'<div class="pred-item"><div class="pred-item-top"><span class="pred-item-name">'+p.omschrijving+'</span><div style="display:flex;align-items:center;gap:8px"><span class="pred-item-aantal">×'+p.verwachtAantal+'</span>'+btnHtml+'</div></div><div class="pred-item-meta"><span class="zeker-pill zeker-'+p.zekerheid+'"><span class="confidence-dots">'+dots+'</span> '+p.zekerheidLabel+'</span><span class="basis-tag">'+p.basis+'</span></div></div>';
       }).join('')+'</div>';
   }
