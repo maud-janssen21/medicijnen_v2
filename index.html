@@ -386,6 +386,7 @@ const TENANT_ID = '1bd7f06f-0ca0-457f-95f2-5a0dc19e6f3e';
 const REDIRECT_URI = 'https://maud-janssen21.github.io/medicijnen_v2/';
 const SCOPES = 'Files.ReadWrite User.Read';
 const ONEDRIVE_FILE = 'medicatiebestellingen.csv';
+const ONEDRIVE_BESTEL_FILE = 'bestellijst.json';
 const STORAGE_KEY = 'med_orders_v3';
 const LOG_KEY = 'med_import_log_v3';
 const BESTEL_KEY = 'med_bestelLijst_v1';
@@ -394,7 +395,7 @@ const TOKEN_EXP_KEY = 'med_od_token_exp';
 
 let records = [], importLog = new Set(), previewRows = [], selectedDate = null, editId = null;
 let bestelLijst = []; // [{id, soort, omschrijving, aantal}]
-let accessToken = null, onedriveFileId = null;
+let accessToken = null, onedriveFileId = null, bestelFileId = null;
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -496,8 +497,35 @@ function buildCSV(){
 function saveLocally(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(records));localStorage.setItem(LOG_KEY,JSON.stringify([...importLog]));}catch(e){}}
 function loadLocally(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)records=JSON.parse(r);}catch(e){records=[];}try{const l=localStorage.getItem(LOG_KEY);if(l)importLog=new Set(JSON.parse(l));}catch(e){importLog=new Set();}}
 
-function saveBestelLijst(){try{localStorage.setItem(BESTEL_KEY,JSON.stringify(bestelLijst));}catch(e){}}
+function saveBestelLijst(){
+  try{localStorage.setItem(BESTEL_KEY,JSON.stringify(bestelLijst));}catch(e){}
+  if(isLoggedIn())saveBestelLijstOneDrive().catch(()=>{});
+}
 function loadBestelLijst(){try{const b=localStorage.getItem(BESTEL_KEY);if(b)bestelLijst=JSON.parse(b);}catch(e){bestelLijst=[];}}
+
+async function saveBestelLijstOneDrive(){
+  if(!accessToken)return;
+  const blob=new Blob([JSON.stringify(bestelLijst)],{type:'application/json'});
+  const url=bestelFileId
+    ?'https://graph.microsoft.com/v1.0/me/drive/items/'+bestelFileId+'/content'
+    :'https://graph.microsoft.com/v1.0/me/drive/root:/'+ONEDRIVE_BESTEL_FILE+':/content';
+  const resp=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:blob});
+  if(resp.ok){const d=await resp.json();bestelFileId=d.id;}
+}
+
+async function loadBestelLijstOneDrive(){
+  if(!accessToken)return;
+  try{
+    const r=await fetch("https://graph.microsoft.com/v1.0/me/drive/root/children?$filter=name eq '"+ONEDRIVE_BESTEL_FILE+"'",{headers:{Authorization:'Bearer '+accessToken}});
+    const d=await r.json();
+    if(d.value&&d.value.length>0){
+      bestelFileId=d.value[0].id;
+      const cr=await fetch('https://graph.microsoft.com/v1.0/me/drive/items/'+bestelFileId+'/content',{headers:{Authorization:'Bearer '+accessToken}});
+      const json=await cr.json();
+      if(Array.isArray(json)){bestelLijst=json;localStorage.setItem(BESTEL_KEY,JSON.stringify(bestelLijst));}
+    }
+  }catch(e){console.warn('Bestellijst laden mislukt:',e);}
+}
 
 async function saveData(){saveLocally();if(isLoggedIn()){try{await saveToOneDrive();}catch(e){setOnedriveStatus('disconnected','Lokaal opgeslagen — OneDrive mislukt');}}}
 
@@ -842,7 +870,10 @@ async function confirmClearAll(){if(confirm('Weet je zeker dat je ALLE bestellin
 async function init(){
   loadBestelLijst();
   const loggedInViaCallback=await handleAuthCallback();
-  if(loggedInViaCallback||loadStoredToken()){await loadFromOneDrive();}
+  if(loggedInViaCallback||loadStoredToken()){
+    await loadFromOneDrive();
+    await loadBestelLijstOneDrive();
+  }
   else{loadLocally();setOnedriveStatus('disconnected','Niet verbonden — tik op OneDrive om in te loggen');}
   renderAll();setupSuggestions();
 }
