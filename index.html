@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2d5a8e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Medicatie">
+<title>Medicatiebestellingen</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #ffffff; --bg-secondary: #f5f5f3; --bg-info: #e8f0fb; --bg-success: #eaf5ee;
+    --bg-warning: #fef8e7; --bg-danger: #fdf0f0; --text: #1a1a1a; --text-secondary: #6b6b6b;
+    --text-tertiary: #b0b0b0; --text-info: #1a56c4; --text-success: #1a7a3a;
+    --text-warning: #8a6000; --text-danger: #b91c1c; --border: #e4e4e2; --border-strong: #cacac8;
+    --accent: #2d5a8e; --accent-light: #e8f0fb; --accent-text: #1a3f6b;
+    --soort-zeug: #f0faf4; --soort-zeug-text: #166534; --soort-zeug-border: #bbf7d0;
+    --soort-vlees: #fff7ed; --soort-vlees-text: #9a3412; --soort-vlees-border: #fed7aa;
+    --soort-big: #f5f3ff; --soort-big-text: #5b21b6; --soort-big-border: #ddd6fe;
+    --soort-other: #f1f5f9; --soort-other-text: #334155; --soort-other-border: #cbd5e1;
+    --radius: 10px; --radius-lg: 14px;
+    --zeker-hoog: #eaf5ee; --zeker-hoog-text: #1a7a3a; --zeker-hoog-border: #86efac;
+    --zeker-mid: #fef8e7; --zeker-mid-text: #8a6000; --zeker-mid-border: #fde68a;
+    --zeker-laag: #fdf0f0; --zeker-laag-text: #b91c1c; --zeker-laag-border: #fca5a5;
+    --nav-height: 64px; --header-height: 60px; --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg-secondary); color: var(--text); font-size: 15px; line-height: 1.5; }
+  .app-header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-height); background: var(--accent); color: #fff; display: flex; align-items: center; padding: 0 16px; gap: 10px; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,0.15); padding-top: env(safe-area-inset-top, 0); }
+  .app-header .icon { font-size: 22px; }
+  .app-header h1 { font-size: 17px; font-weight: 600; flex: 1; }
+  .header-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit; white-space: nowrap; }
+  .header-btn:active { background: rgba(255,255,255,0.25); }
+  .header-btn.sync-ok { background: rgba(134,239,172,0.25); }
+  .header-btn.sync-err { background: rgba(252,165,165,0.25); }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav-height) + var(--safe-bottom)); background: var(--bg); border-top: 0.5px solid var(--border); display: flex; align-items: flex-start; padding-top: 8px; z-index: 100; box-shadow: 0 -1px 8px rgba(0,0,0,0.06); overflow-x: auto; }
+  .nav-item { flex: 1; min-width: 60px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border: none; background: transparent; cursor: pointer; color: var(--text-tertiary); font-family: inherit; font-size: 9px; font-weight: 500; }
+  .nav-item .ti { font-size: 20px; }
+  .nav-item.active { color: var(--accent); }
+  .scroll-area { position: fixed; top: var(--header-height); left: 0; right: 0; bottom: calc(var(--nav-height) + var(--safe-bottom)); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px 8px; }
+  .panel { display: none; } .panel.active { display: block; }
+  .card { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .card-header { padding: 10px 14px; background: var(--accent); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h3 { font-size: 14px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 6px; }
+  .card-header span { font-size: 12px; color: rgba(255,255,255,0.75); }
+  .med-list { width: 100%; }
+  .med-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 11px 14px; border-bottom: 0.5px solid var(--border); align-items: center; }
+  .med-row:last-child { border-bottom: none; }
+  .med-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .med-soort { font-size: 11px; margin-top: 1px; }
+  .med-aantal { font-size: 15px; font-weight: 600; text-align: right; color: var(--accent); min-width: 28px; }
+  .med-actions { display: flex; gap: 4px; }
+  .icon-btn { width: 32px; height: 32px; border: none; border-radius: 8px; background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 16px; }
+  .icon-btn:active { background: var(--border); }
+  .icon-btn.del:active { background: var(--bg-danger); color: var(--text-danger); }
+  .filter-bar { background: var(--bg); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .filter-bar label { font-size: 12px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
+  .filter-bar select { flex: 1; padding: 6px 8px; border: 0.5px solid var(--border-strong); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--text); background: var(--bg); outline: none; }
+  .upload-zone { border: 2px dashed var(--border-strong); border-radius: var(--radius-lg); padding: 2.5rem 1rem; text-align: center; cursor: pointer; background: var(--bg); margin-bottom: 12px; }
+  .upload-zone:active { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone .ti { font-size: 40px; color: var(--text-tertiary); display: block; margin-bottom: 10px; }
+  .upload-zone p { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
+  .upload-zone small { font-size: 12px; color: var(--text-tertiary); }
+  .status-box { padding: 12px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 12px; display: none; }
+  .status-box.show { display: block; }
+  .status-info { background: var(--bg-info); color: var(--text-info); border: 0.5px solid #bcd0f5; }
+  .status-success { background: var(--bg-success); color: var(--text-success); border: 0.5px solid #86efac; }
+  .status-warning { background: var(--bg-warning); color: var(--text-warning); border: 0.5px solid #fde68a; }
+  .status-danger { background: var(--bg-danger); color: var(--text-danger); border: 0.5px solid #fca5a5; }
+  .preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .preview-header strong { font-size: 14px; }
+  .preview-actions { display: flex; gap: 8px; }
+  .preview-item { padding: 10px 14px; border-bottom: 0.5px solid var(--border); background: var(--bg); }
+  .preview-item:last-child { border-bottom: none; }
+  .preview-item.dup { background: var(--bg-warning); }
+  .preview-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .preview-item-name { font-size: 13px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .preview-item-meta { font-size: 12px; margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .form-section { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 16px; margin-bottom: 12px; }
+  .form-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--accent); }
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-bottom: 5px; }
+  .form-group input { width: 100%; padding: 11px 12px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); font-size: 15px; font-family: inherit; color: var(--text); background: var(--bg); outline: none; -webkit-appearance: none; }
+  .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,90,142,0.1); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-group-rel { position: relative; }
+  .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg); border: 0.5px solid var(--border-strong); border-radius: var(--radius); z-index: 500; max-height: 200px; overflow-y: auto; margin-top: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .suggestion-item { padding: 13px 14px; font-size: 14px; border-bottom: 0.5px solid var(--border); color: var(--text); cursor: pointer; }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:active { background: var(--accent-light); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 16px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: transparent; color: var(--text); font-size: 14px; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .btn:active { opacity: 0.75; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-success { background: #166534; color: #fff; border-color: #166534; }
+  .btn-danger { color: var(--text-danger); border-color: #fca5a5; }
+  .btn-danger:active { background: var(--bg-danger); }
+  .btn-block { width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+  .btn-sm { padding: 7px 12px; font-size: 13px; }
+  .soort-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .soort-zeug { background: var(--soort-zeug); color: var(--soort-zeug-text); border: 0.5px solid var(--soort-zeug-border); }
+  .soort-vlees { background: var(--soort-vlees); color: var(--soort-vlees-text); border: 0.5px solid var(--soort-vlees-border); }
+  .soort-big { background: var(--soort-big); color: var(--soort-big-text); border: 0.5px solid var(--soort-big-border); }
+  .soort-other { background: var(--soort-other); color: var(--soort-other-text); border: 0.5px solid var(--soort-other-border); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-dup { background: var(--bg-warning); color: var(--text-warning); }
+  .badge-new { background: var(--bg-success); color: var(--text-success); }
+  .zeker-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .zeker-hoog { background: var(--zeker-hoog); color: var(--zeker-hoog-text); border: 0.5px solid var(--zeker-hoog-border); }
+  .zeker-mid { background: var(--zeker-mid); color: var(--zeker-mid-text); border: 0.5px solid var(--zeker-mid-border); }
+  .zeker-laag { background: var(--zeker-laag); color: var(--zeker-laag-text); border: 0.5px solid var(--zeker-laag-border); }
+  .pred-header-card { background: linear-gradient(135deg, var(--accent), var(--accent-text)); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; color: #fff; }
+  .pred-header-card h2 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .pred-header-card p { font-size: 12px; opacity: 0.8; }
+  .pred-info { background: var(--bg); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; border: 0.5px solid var(--border); display: flex; gap: 8px; }
+  .pred-item { padding: 12px 14px; border-bottom: 0.5px solid var(--border); }
+  .pred-item:last-child { border-bottom: none; }
+  .pred-item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .pred-item-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .pred-item-aantal { font-size: 18px; font-weight: 600; color: var(--accent); }
+  .pred-item-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .pred-card-header { padding: 9px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
+  .basis-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; color: var(--text-tertiary); padding: 2px 7px; border: 0.5px solid var(--border); border-radius: 10px; }
+  .confidence-dots { display: inline-flex; gap: 3px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); display: inline-block; }
+  .dot.filled-hoog { background: var(--zeker-hoog-text); }
+  .dot.filled-mid { background: var(--zeker-mid-text); }
+  .dot.filled-laag { background: var(--zeker-laag-text); }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-tertiary); font-size: 14px; }
+  .empty .ti { font-size: 48px; display: block; margin-bottom: 10px; color: var(--border-strong); }
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: flex-end; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--bg); border-radius: 20px 20px 0 0; padding: 20px 16px calc(20px + var(--safe-bottom)); width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal-handle { width: 40px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 0 auto 16px; }
+  .modal h2 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-actions .btn { flex: 1; justify-content: center; }
+  .hint { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+  .danger-zone { margin-top: 8px; }
+  .onedrive-status { background: var(--bg); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .onedrive-status .ti { font-size: 20px; flex-shrink: 0; }
+  .onedrive-status.connected { border-color: var(--zeker-hoog-border); background: var(--zeker-hoog); color: var(--zeker-hoog-text); }
+  .onedrive-status.disconnected { border-color: var(--zeker-laag-border); background: var(--zeker-laag); color: var(--zeker-laag-text); }
+  .onedrive-status.syncing { border-color: #bcd0f5; background: var(--bg-info); color: var(--text-info); }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { from{transform:rotate(0deg);}to{transform:rotate(360deg);} }
+
+  /* BESTELLIJST */
+  .bestel-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 11px 14px; border-bottom: 0.5px solid var(--border); align-items: center; }
+  .bestel-row:last-child { border-bottom: none; }
+  .bestel-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bestel-soort { font-size: 11px; margin-top: 1px; }
+  .bestel-aantal-input { width: 64px; padding: 6px 8px; border: 0.5px solid var(--border-strong); border-radius: 8px; font-size: 15px; font-weight: 600; font-family: inherit; color: var(--accent); text-align: center; background: var(--bg); outline: none; -webkit-appearance: none; }
+  .bestel-aantal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(45,90,142,0.1); }
+  .bestel-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .bestel-toolbar .btn { flex: 1; justify-content: center; font-size: 13px; padding: 10px; }
+  .bestel-geplaatst-btn { margin-top: 4px; }
+  .bestel-sectie-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 8px; margin-bottom: 8px; border-bottom: 1.5px solid var(--border); font-size: 14px; font-weight: 600; color: var(--accent); }
+  .btn-pred-add { width: 34px; height: 34px; border: 0.5px solid var(--accent); border-radius: 8px; background: var(--accent-light); color: var(--accent); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; transition: all 0.15s; }
+  .btn-pred-add:active { background: var(--accent); color: #fff; }
+  .btn-pred-add-done { background: var(--zeker-hoog); border-color: var(--zeker-hoog-border); color: var(--zeker-hoog-text); cursor: default; }
+  .invoer-tabs { display: flex; gap: 4px; background: var(--bg-secondary); border-radius: var(--radius); padding: 4px; margin-bottom: 14px; }
+  .invoer-tab { flex: 1; padding: 9px 8px; border: none; background: transparent; border-radius: 8px; font-size: 13px; font-weight: 400; color: var(--text-secondary); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .invoer-tab.active { background: var(--accent); color: #fff; font-weight: 500; }
+  .invoer-tab:active:not(.active) { background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <i class="ti ti-pill icon"></i>
+  <h1>Medicatie</h1>
+  <button class="header-btn" id="syncBtn" onclick="syncOneDrive()"><i class="ti ti-brand-onedrive"></i> <span id="syncLabel">OneDrive</span></button>
+  <button class="header-btn" id="logoutBtn" onclick="logoutOneDrive()" title="Uitloggen uit OneDrive" style="display:none"><i class="ti ti-logout"></i></button>
+</div>
+
+<div class="scroll-area">
+
+  <!-- TAB 1: OVERZICHT BESTELLINGEN -->
+  <div id="tab-overzicht" class="panel active">
+    <div id="onedriveStatusBar" class="onedrive-status disconnected">
+      <i class="ti ti-brand-onedrive"></i>
+      <span id="onedriveStatusText">Niet verbonden — tik op OneDrive om in te loggen</span>
+    </div>
+    <div class="filter-bar">
+      <label><i class="ti ti-calendar"></i></label>
+      <select id="dateSelect" onchange="selectDate(this.value)"><option value="">— Alle datums —</option></select>
+    </div>
+    <div id="orderView"></div>
+    <div class="danger-zone">
+      <button class="btn btn-danger btn-block" onclick="confirmClearAll()"><i class="ti ti-trash"></i> Alle bestellingen wissen</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: INVOER (moved up, placeholder) -->
+
+  <!-- TAB 2: INVOER -->
+  <div id="tab-invoer" class="panel">
+    <div class="invoer-tabs">
+      <button class="invoer-tab active" id="itab-pdf" onclick="switchInvoerTab('pdf')"><i class="ti ti-upload"></i> PDF uploaden</button>
+      <button class="invoer-tab" id="itab-handmatig" onclick="switchInvoerTab('handmatig')"><i class="ti ti-edit"></i> Handmatig</button>
+    </div>
+
+    <!-- PDF sectie -->
+    <div id="invoer-pdf">
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <i class="ti ti-file-upload"></i>
+        <p>Tik om PDF te selecteren</p>
+        <small>Meerdere bestanden tegelijk mogelijk</small>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf" multiple onchange="handleFiles(this.files)" style="display:none">
+      <div id="uploadStatus" class="status-box"></div>
+      <div id="previewSection" style="display:none">
+        <div class="preview-header">
+          <strong id="previewTitle">Gevonden regels</strong>
+          <div class="preview-actions">
+            <button class="btn btn-sm" onclick="clearPreview()">Annuleren</button>
+            <button class="btn btn-sm btn-primary" onclick="importPreview()"><i class="ti ti-check"></i> Importeren</button>
+          </div>
+        </div>
+        <p class="hint"><i class="ti ti-info-circle"></i> Na importeren wordt opgeslagen in OneDrive.</p>
+        <div class="card" id="previewList"></div>
+      </div>
+    </div>
+
+    <!-- Handmatig sectie -->
+    <div id="invoer-handmatig" style="display:none">
+      <div class="form-section">
+        <h3><i class="ti ti-edit"></i> Regel toevoegen aan overzicht</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Afleverdatum</label><input type="date" id="m_datum"></div>
+          <div class="form-group"><label>Aantal</label><input type="number" id="m_aantal" min="1" placeholder="5" inputmode="numeric"></div>
+        </div>
+        <div class="form-group form-group-rel">
+          <label>Soort</label>
+          <input type="text" id="m_soort" placeholder="bijv. zeugen" autocomplete="off">
+          <div class="suggestions-list" id="sug_m_soort" style="display:none"></div>
+        </div>
+        <div class="form-group form-group-rel">
+          <label>Omschrijving</label>
+          <input type="text" id="m_omschrijving" placeholder="bijv. Depocilline 100 ml" autocomplete="off">
+          <div class="suggestions-list" id="sug_m_omschrijving" style="display:none"></div>
+        </div>
+        <div id="manualStatus" class="status-box"></div>
+        <p class="hint"><i class="ti ti-info-circle"></i> Na toevoegen wordt opgeslagen in OneDrive.</p>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary btn-block" onclick="addManual()"><i class="ti ti-plus"></i> Toevoegen</button>
+          <button class="btn btn-block" onclick="clearManual()" style="max-width:100px">Wissen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: BESTELLING -->
+  <div id="tab-bestelling" class="panel">
+
+    <!-- Sub-tabbladen -->
+    <div class="invoer-tabs" style="margin-bottom:14px">
+      <button class="invoer-tab active" id="btab-overzicht" onclick="switchBestelTab('overzicht')"><i class="ti ti-list"></i> Besteloverzicht <span id="bestelTeller" style="display:none;background:rgba(255,255,255,0.3);border-radius:10px;padding:0 6px;font-size:10px;margin-left:2px"></span></button>
+      <button class="invoer-tab" id="btab-handmatig" onclick="switchBestelTab('handmatig')"><i class="ti ti-edit"></i> Handmatig</button>
+      <button class="invoer-tab" id="btab-voorspelling" onclick="switchBestelTab('voorspelling')"><i class="ti ti-sparkles"></i> Voorspelling</button>
+    </div>
+
+    <!-- SUB-TAB 1: BESTELOVERZICHT -->
+    <div id="bpanel-overzicht">
+      <div id="bestelStatus" class="status-box"></div>
+      <div id="bestelView"></div>
+      <div id="bestelGeplaatst" style="display:none;margin-top:8px">
+        <button class="btn btn-success btn-block" onclick="confirmBestelGeplaatst()"><i class="ti ti-check"></i> Bestelling geplaatst — lijst leegmaken</button>
+      </div>
+    </div>
+
+    <!-- SUB-TAB 2: HANDMATIG -->
+    <div id="bpanel-handmatig" style="display:none">
+      <div class="form-section">
+        <h3><i class="ti ti-edit"></i> Handmatig toevoegen</h3>
+        <div class="form-group form-group-rel">
+          <label>Soort</label>
+          <input type="text" id="bm_soort" placeholder="bijv. zeugen" autocomplete="off">
+          <div class="suggestions-list" id="sug_bm_soort" style="display:none"></div>
+        </div>
+        <div class="form-group form-group-rel">
+          <label>Omschrijving</label>
+          <input type="text" id="bm_omschrijving" placeholder="bijv. Depocilline 100 ml" autocomplete="off">
+          <div class="suggestions-list" id="sug_bm_omschrijving" style="display:none"></div>
+        </div>
+        <div class="form-group">
+          <label>Aantal</label>
+          <input type="number" id="bm_aantal" min="1" placeholder="5" inputmode="numeric">
+        </div>
+        <div id="bmStatus" class="status-box"></div>
+        <button class="btn btn-primary btn-block" onclick="addHandmatigToBestelling()"><i class="ti ti-plus"></i> Toevoegen aan bestelling</button>
+      </div>
+    </div>
+
+    <!-- SUB-TAB 3: VOORSPELLING -->
+    <div id="bpanel-voorspelling" style="display:none">
+      <div class="pred-info">
+        <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
+        <span id="predInfoText">Tik op het plusje om een middel toe te voegen aan je bestelling.</span>
+      </div>
+      <div id="predView"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('overzicht')" id="nav-overzicht"><i class="ti ti-list"></i><span>Overzicht</span></button>
+  <button class="nav-item" onclick="switchTab('invoer')" id="nav-invoer"><i class="ti ti-file-plus"></i><span>Invoer</span></button>
+  <button class="nav-item" onclick="switchTab('bestelling')" id="nav-bestelling"><i class="ti ti-shopping-cart"></i><span>Bestelling</span></button>
+</nav>
+
+<!-- EDIT OVERZICHT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Regel bewerken</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Afleverdatum</label><input type="date" id="edit_datum"></div>
+      <div class="form-group"><label>Aantal</label><input type="number" id="edit_aantal" min="1" inputmode="numeric"></div>
+    </div>
+    <div class="form-group"><label>Soort</label><input type="text" id="edit_soort"></div>
+    <div class="form-group"><label>Omschrijving</label><input type="text" id="edit_omschrijving"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeEdit()">Annuleren</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- BESTELLIJST TOEVOEGEN MODAL -->
+<div class="modal-bg" id="bestelToevoegModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Toevoegen aan bestelling</h2>
+    <div class="form-group form-group-rel">
+      <label>Soort</label>
+      <input type="text" id="bt_soort" placeholder="bijv. zeugen" autocomplete="off">
+      <div class="suggestions-list" id="sug_bt_soort" style="display:none"></div>
+    </div>
+    <div class="form-group form-group-rel">
+      <label>Omschrijving</label>
+      <input type="text" id="bt_omschrijving" placeholder="bijv. Depocilline 100 ml" autocomplete="off">
+      <div class="suggestions-list" id="sug_bt_omschrijving" style="display:none"></div>
+    </div>
+    <div class="form-group">
+      <label>Aantal</label>
+      <input type="number" id="bt_aantal" min="1" placeholder="5" inputmode="numeric">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeBestelToevoegen()">Annuleren</button>
+      <button class="btn btn-primary" onclick="addToBestellijst()"><i class="ti ti-plus"></i> Toevoegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- BESTELLING GEPLAATST BEVESTIGING MODAL -->
+<div class="modal-bg" id="bestelBevestigModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Bestelling geplaatst?</h2>
+    <p>Weet je zeker dat de bestelling geplaatst is? De lijst wordt dan leeggemaakt.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeBestelBevestig()">Annuleren</button>
+      <button class="btn btn-success" onclick="bestelGeplaatst()"><i class="ti ti-check"></i> Ja, leegmaken</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// ── CONFIGURATIE ──────────────────────────────────────────────────────────────
+const CLIENT_ID = '0e01663b-070d-457a-bcae-a35fd7dc2ae9';
+const TENANT_ID = '1bd7f06f-0ca0-457f-95f2-5a0dc19e6f3e';
+const REDIRECT_URI = 'https://maud-janssen21.github.io/medicijnen_v2/';
+const SCOPES = 'Files.ReadWrite User.Read offline_access';
+const ONEDRIVE_FILE = 'medicatiebestellingen.csv';
+const ONEDRIVE_BESTEL_FILE = 'bestellijst.json';
+// OneDrive endpoints gebruik /me/drive voor zakelijke accounts
+const STORAGE_KEY = 'med_orders_v3';
+const LOG_KEY = 'med_import_log_v3';
+const BESTEL_KEY = 'med_bestelLijst_v1';
+const TOKEN_KEY = 'med_od_token';
+const TOKEN_EXP_KEY = 'med_od_token_exp';
+const REFRESH_TOKEN_KEY = 'med_od_refresh';
+
+let records = [], importLog = new Set(), previewRows = [], selectedDate = null, editId = null;
+let bestelLijst = []; // [{id, soort, omschrijving, aantal}]
+let accessToken = null, onedriveFileId = null, bestelFileId = null;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── ONEDRIVE AUTH (PKCE) ──────────────────────────────────────────────────────
+async function generateCodeVerifier(){const a=new Uint8Array(32);crypto.getRandomValues(a);return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+async function generateCodeChallenge(v){const d=new TextEncoder().encode(v);const h=await crypto.subtle.digest('SHA-256',d);return btoa(String.fromCharCode(...new Uint8Array(h))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+
+async function loginOneDrive(){
+  const verifier=await generateCodeVerifier();
+  const challenge=await generateCodeChallenge(verifier);
+  sessionStorage.setItem('pkce_verifier',verifier);
+  const params=new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT_URI,scope:SCOPES,code_challenge:challenge,code_challenge_method:'S256',response_mode:'query',login_hint:'dv-vrk@schothorst.nl'});
+  window.location.href='https://login.microsoftonline.com/'+TENANT_ID+'/oauth2/v2.0/authorize?'+params;
+}
+
+async function handleAuthCallback(){
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  if(!code)return false;
+  window.history.replaceState({},document.title,window.location.pathname);
+  const verifier=sessionStorage.getItem('pkce_verifier');
+  if(!verifier)return false;
+  try{
+    const resp=await fetch('https://login.microsoftonline.com/'+TENANT_ID+'/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:REDIRECT_URI,code_verifier:verifier,scope:SCOPES})});
+    const data=await resp.json();
+    if(data.access_token){
+      accessToken=data.access_token;
+      const exp=Date.now()+(data.expires_in-60)*1000;
+      localStorage.setItem(TOKEN_KEY,accessToken);
+      localStorage.setItem(TOKEN_EXP_KEY,String(exp));
+      if(data.refresh_token)localStorage.setItem(REFRESH_TOKEN_KEY,data.refresh_token);
+      sessionStorage.removeItem('pkce_verifier');
+      return true;
+    }
+  }catch(e){console.error('Token fout:',e);}
+  return false;
+}
+
+function loadStoredToken(){
+  const t=localStorage.getItem(TOKEN_KEY);
+  const e=parseInt(localStorage.getItem(TOKEN_EXP_KEY)||'0');
+  if(t&&Date.now()<e){accessToken=t;return true;}
+  return false;
+}
+
+async function refreshAccessToken(){
+  const refreshToken=localStorage.getItem(REFRESH_TOKEN_KEY);
+  if(!refreshToken)return false;
+  try{
+    const resp=await fetch('https://login.microsoftonline.com/'+TENANT_ID+'/oauth2/v2.0/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams({
+        client_id:CLIENT_ID,
+        grant_type:'refresh_token',
+        refresh_token:refreshToken,
+        scope:SCOPES
+      })
+    });
+    const data=await resp.json();
+    if(data.access_token){
+      accessToken=data.access_token;
+      const exp=Date.now()+(data.expires_in-60)*1000;
+      localStorage.setItem(TOKEN_KEY,accessToken);
+      localStorage.setItem(TOKEN_EXP_KEY,String(exp));
+      if(data.refresh_token)localStorage.setItem(REFRESH_TOKEN_KEY,data.refresh_token);
+      return true;
+    }
+  }catch(e){console.warn('Refresh mislukt:',e);}
+  return false;
+}
+function isLoggedIn(){return!!accessToken;}
+
+function logoutOneDrive(){
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXP_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  accessToken=null;
+  setOnedriveStatus('disconnected','Uitgelogd — tik op OneDrive om opnieuw in te loggen');
+}
+
+async function syncOneDrive(){if(!isLoggedIn()){await loginOneDrive();return;}setOnedriveStatus('syncing','Synchroniseren...');try{await saveToOneDrive();setOnedriveStatus('connected','Opgeslagen in OneDrive');}catch(e){setOnedriveStatus('disconnected','Synchronisatie mislukt');}}
+
+function setOnedriveStatus(state,text){
+  const bar=document.getElementById('onedriveStatusBar');
+  const txt=document.getElementById('onedriveStatusText');
+  const btn=document.getElementById('syncBtn');
+  const lbl=document.getElementById('syncLabel');
+  bar.className='onedrive-status '+state;
+  txt.textContent=text;
+  if(state==='connected'){btn.className='header-btn sync-ok';lbl.textContent='Gesynchroniseerd';document.getElementById('logoutBtn').style.display='flex';}
+  else if(state==='syncing'){btn.className='header-btn';lbl.innerHTML='<span class="spin">↻</span>';}
+  else{btn.className='header-btn sync-err';lbl.textContent='Inloggen';document.getElementById('logoutBtn').style.display='none';}
+}
+
+async function loadFromOneDrive(){
+  if(!accessToken)return false;
+  setOnedriveStatus('syncing','Data laden...');
+  try{
+    const r=await fetch("https://graph.microsoft.com/v1.0/me/drive/root/children?$filter=name eq '"+ONEDRIVE_FILE+"'",{headers:{Authorization:'Bearer '+accessToken}});
+    const d=await r.json();
+    if(d.value&&d.value.length>0){
+      onedriveFileId=d.value[0].id;
+      const cr=await fetch('https://graph.microsoft.com/v1.0/me/drive/items/'+onedriveFileId+'/content',{headers:{Authorization:'Bearer '+accessToken}});
+      parseCSVIntoRecords(await cr.text());
+      setOnedriveStatus('connected','Data geladen ('+records.length+' regels)');
+      return true;
+    }else{setOnedriveStatus('connected','Ingelogd — nog geen bestand');return true;}
+  }catch(e){setOnedriveStatus('disconnected','Laden mislukt — lokale data');return false;}
+}
+
+function parseCSVIntoRecords(csvText){
+  const raw=csvText.replace(/^\uFEFF/,'');
+  // Splits op de bestellijst-scheiding
+  const parts=raw.split('##BESTELLIJST##');
+  const recordPart=parts[0];
+  const bestelPart=parts.length>1?parts[1]:'';
+
+  // Parse bestellingen
+  const lines=recordPart.split('\n').filter(l=>l.trim());
+  if(lines.length>=2){
+    records=[];importLog=new Set();
+    for(let i=1;i<lines.length;i++){
+      const p=lines[i].split(';');if(p.length<4)continue;
+      const dr=p[0].trim();const dp=dr.split('-');
+      const datum=dp.length===3&&dp[2].length===4?dp[2]+'-'+dp[1].padStart(2,'0')+'-'+dp[0].padStart(2,'0'):dr;
+      const soort=p[1].trim();const omschrijving=p[2].trim();const aantal=parseInt(p[3].trim());
+      if(!datum||!omschrijving||isNaN(aantal))continue;
+      const rec={datum,soort,omschrijving,aantal,id:Date.now()+'_'+Math.random()};
+      records.push(rec);importLog.add(makeKey(rec));
+    }
+    saveLocally();
+  }
+
+  // Parse bestellijst
+  if(bestelPart.trim()){
+    const blines=bestelPart.split('\n').filter(l=>l.trim());
+    // Eerste regel is header (Soort;Omschrijving;Aantal;Bron)
+    const newBestel=[];
+    for(let i=1;i<blines.length;i++){
+      const p=blines[i].split(';');if(p.length<3)continue;
+      const soort=p[0].trim();const omschrijving=p[1].trim();const aantal=parseInt(p[2].trim());const bron=p[3]?p[3].trim():'handmatig';
+      if(!omschrijving||isNaN(aantal))continue;
+      newBestel.push({id:Date.now()+'_'+Math.random(),soort,omschrijving,aantal,bron});
+    }
+    bestelLijst=newBestel;
+    try{localStorage.setItem(BESTEL_KEY,JSON.stringify(bestelLijst));}catch(e){}
+  }
+}
+
+async function saveToOneDrive(){
+  if(!accessToken)throw new Error('Niet ingelogd');
+  const csv=buildCSV();
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=onedriveFileId?'https://graph.microsoft.com/v1.0/me/drive/items/'+onedriveFileId+'/content':'https://graph.microsoft.com/v1.0/me/drive/root:/'+ONEDRIVE_FILE+':/content';
+  const resp=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'text/csv'},body:blob});
+  if(!resp.ok)throw new Error('Opslaan mislukt: '+resp.status);
+  const data=await resp.json();
+  onedriveFileId=data.id;
+  saveLocally();
+  setOnedriveStatus('connected','Opgeslagen — '+new Date().toLocaleTimeString('nl-NL'));
+}
+
+function buildCSV(){
+  const merged=getMergedRecords(records);
+  const sorted=merged.sort((a,b)=>a.datum.localeCompare(b.datum)||soortRank(a.soort)-soortRank(b.soort)||a.omschrijving.localeCompare(b.omschrijving,'nl'));
+  let csv='Afleverdatum;Soort;Omschrijving;Aantal\n'+sorted.map(r=>fmtDate(r.datum)+';'+(r.soort||'')+';'+r.omschrijving+';'+r.aantal).join('\n');
+  // Bestellijst als aparte sectie
+  csv+='\n\n##BESTELLIJST##\nSoort;Omschrijving;Aantal;Bron\n';
+  csv+=bestelLijst.map(r=>(r.soort||'')+';'+r.omschrijving+';'+r.aantal+';'+(r.bron||'handmatig')).join('\n');
+  return csv;
+}
+
+function saveLocally(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(records));localStorage.setItem(LOG_KEY,JSON.stringify([...importLog]));}catch(e){}}
+function loadLocally(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)records=JSON.parse(r);}catch(e){records=[];}try{const l=localStorage.getItem(LOG_KEY);if(l)importLog=new Set(JSON.parse(l));}catch(e){importLog=new Set();}}
+
+function saveBestelLijst(){
+  try{localStorage.setItem(BESTEL_KEY,JSON.stringify(bestelLijst));}catch(e){}
+  // Sla ook op in OneDrive via het CSV-bestand
+  if(isLoggedIn())saveToOneDrive().catch(()=>{});
+}
+function loadBestelLijst(){try{const b=localStorage.getItem(BESTEL_KEY);if(b)bestelLijst=JSON.parse(b);}catch(e){bestelLijst=[];}}
+
+// Bestellijst wordt opgeslagen via buildCSV()
+
+async function saveData(){saveLocally();if(isLoggedIn()){try{await saveToOneDrive();}catch(e){setOnedriveStatus('disconnected','Lokaal opgeslagen — OneDrive mislukt');}}}
+
+// ── HULPFUNCTIES ──────────────────────────────────────────────────────────────
+function makeKey(r){return[r.datum,r.soort,r.omschrijving,String(r.aantal)].join('|').toLowerCase().trim();}
+function isDuplicate(row){return importLog.has(makeKey(row));}
+function mergeKey(r){return[r.datum,(r.soort||'').toLowerCase().trim(),r.omschrijving.toLowerCase().trim()].join('|||');}
+function getMergedRecords(recs){const map={};for(const r of recs){const k=mergeKey(r);if(!map[k])map[k]={...r,aantal:0,ids:[]};map[k].aantal+=r.aantal;map[k].ids.push(r.id);}return Object.values(map);}
+const SOORT_VOLGORDE=['zeugen','vleesvarkens','gespeende biggen'];
+function soortRank(s){const idx=SOORT_VOLGORDE.indexOf((s||'').toLowerCase());return idx===-1?98:idx;}
+function sortRows(rows){return rows.slice().sort((a,b)=>{const sr=soortRank(a.soort)-soortRank(b.soort);return sr!==0?sr:a.omschrijving.localeCompare(b.omschrijving,'nl');});}
+function soortClass(s){if(!s)return'soort-other';const v=s.toLowerCase();if(v.includes('zeug'))return'soort-zeug';if(v.includes('vlees'))return'soort-vlees';if(v.includes('big'))return'soort-big';return'soort-other';}
+function soortPill(s){if(!s)return'<span style="color:var(--text-tertiary)">–</span>';return'<span class="soort-pill '+soortClass(s)+'">'+s+'</span>';}
+function soortHeaderStyle(s){if(!s)return'background:var(--soort-other);border-bottom:2px solid var(--soort-other-border);';const v=s.toLowerCase();if(v.includes('zeug'))return'background:var(--soort-zeug);border-bottom:2px solid var(--soort-zeug-border);';if(v.includes('vlees'))return'background:var(--soort-vlees);border-bottom:2px solid var(--soort-vlees-border);';if(v.includes('big'))return'background:var(--soort-big);border-bottom:2px solid var(--soort-big-border);';return'background:var(--soort-other);border-bottom:2px solid var(--soort-other-border);';}
+function normDate(d){const p=d.split(/[-\/]/);return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):d;}
+function fmtDate(iso){if(!iso)return'–';const p=iso.split('-');return p.length===3?p[2]+'-'+p[1]+'-'+p[0]:iso;}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchInvoerTab(name){
+  document.getElementById('invoer-pdf').style.display = name==='pdf' ? 'block' : 'none';
+  document.getElementById('invoer-handmatig').style.display = name==='handmatig' ? 'block' : 'none';
+  document.getElementById('itab-pdf').classList.toggle('active', name==='pdf');
+  document.getElementById('itab-handmatig').classList.toggle('active', name==='handmatig');
+}
+
+function switchTab(name){
+  ['overzicht','invoer','bestelling'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+    document.getElementById('nav-'+t).classList.toggle('active',t===name);
+  });
+  if(name==='bestelling'){renderBestelLijst();updateBestelTeller();}
+  hideSuggestions();
+  document.querySelector('.scroll-area').scrollTop=0;
+}
+
+// ── BESTELLIJST ───────────────────────────────────────────────────────────────
+function switchBestelTab(name){
+  ['overzicht','handmatig','voorspelling'].forEach(t=>{
+    document.getElementById('bpanel-'+t).style.display=t===name?'block':'none';
+    document.getElementById('btab-'+t).classList.toggle('active',t===name);
+  });
+  if(name==='overzicht')renderBestelLijst();
+  if(name==='voorspelling')renderPrediction();
+}
+
+function handlePredBtn(btn){
+  const enc=btn.getAttribute('data-enc');
+  const p=JSON.parse(decodeURIComponent(enc));
+  const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
+  if(al){
+    // Deselecteren
+    bestelLijst=bestelLijst.filter(b=>!(b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling'));
+    saveBestelLijst();updateBestelTeller();
+    btn.innerHTML='<i class="ti ti-plus"></i>';
+    btn.classList.remove('btn-pred-add-done');
+    btn.title='Toevoegen aan bestelling';
+  } else {
+    // Toevoegen
+    bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:p.soort,omschrijving:p.omschrijving,aantal:p.aantal,bron:'voorspelling'});
+    saveBestelLijst();updateBestelTeller();
+    btn.innerHTML='<i class="ti ti-check"></i>';
+    btn.classList.add('btn-pred-add-done');
+    btn.title='Klik om te deselecteren';
+  }
+}
+
+function voegPredToeAanBestelling(encoded, btn){
+  const p=JSON.parse(decodeURIComponent(encoded));
+  const al=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
+  if(al)return;
+  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort:p.soort,omschrijving:p.omschrijving,aantal:p.aantal,bron:'voorspelling'});
+  saveBestelLijst();
+  updateBestelTeller();
+  btn.innerHTML='<i class="ti ti-check"></i>';
+  btn.classList.add('btn-pred-add-done');
+  btn.title='Klik om te deselecteren';
+  btn.onclick=function(){verwijderPredUitBestelling(p.soort,p.omschrijving,p.aantal,btn);};
+}
+
+function verwijderPredUitBestelling(soort,omschrijving,aantal,btn){
+  bestelLijst=bestelLijst.filter(b=>!(b.soort===soort&&b.omschrijving===omschrijving&&b.bron==='voorspelling'));
+  saveBestelLijst();
+  updateBestelTeller();
+  const encoded=encodeURIComponent(JSON.stringify({soort,omschrijving,aantal}));
+  btn.innerHTML='<i class="ti ti-plus"></i>';
+  btn.classList.remove('btn-pred-add-done');
+  btn.title='Toevoegen aan bestelling';
+  btn.onclick=function(){voegPredToeAanBestelling(encoded,btn);};
+}
+
+function addHandmatigToBestelling(){
+  const soort=document.getElementById('bm_soort').value.trim();
+  const omschrijving=document.getElementById('bm_omschrijving').value.trim();
+  const aantal=parseInt(document.getElementById('bm_aantal').value);
+  const ms=document.getElementById('bmStatus');
+  if(!omschrijving||isNaN(aantal)||aantal<1){ms.className='status-box show status-warning';ms.textContent='Vul minimaal omschrijving en aantal in.';return;}
+  if(bestelLijst.some(b=>b.soort===soort&&b.omschrijving===omschrijving)){ms.className='status-box show status-warning';ms.textContent='Dit middel staat al in de bestelling.';return;}
+  bestelLijst.push({id:Date.now()+'_'+Math.random(),soort,omschrijving,aantal,bron:'handmatig'});
+  saveBestelLijst();
+  updateBestelTeller();
+  ms.className='status-box show status-success';ms.textContent='Toegevoegd!';
+  document.getElementById('bm_soort').value='';
+  document.getElementById('bm_omschrijving').value='';
+  document.getElementById('bm_aantal').value='';
+}
+
+function updateBestelTeller(){
+  const t=document.getElementById('bestelTeller');
+  if(!t)return;
+  if(bestelLijst.length>0){t.style.display='inline';t.textContent=bestelLijst.length;}
+  else t.style.display='none';
+}
+
+function renderBestelLijst(){
+  const view=document.getElementById('bestelView');
+  const btn=document.getElementById('bestelGeplaatst');
+  if(!view)return;
+  if(!bestelLijst.length){
+    view.innerHTML='<div class="empty"><i class="ti ti-shopping-cart"></i>Nog geen bestellingen.<br>Selecteer middelen in de voorspelling of voeg handmatig toe.</div>';
+    if(btn)btn.style.display='none';
+    return;
+  }
+  if(btn)btn.style.display='block';
+  const sorted=sortRows(bestelLijst);
+  const byGroep={};
+  sorted.forEach(r=>{const s=r.soort||'';if(!byGroep[s])byGroep[s]=[];byGroep[s].push(r);});
+  const soortKeys=Object.keys(byGroep).sort((a,b)=>soortRank(a)-soortRank(b));
+  view.innerHTML=soortKeys.map(soort=>{
+    const rijen=byGroep[soort];
+    return'<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
+      rijen.map(r=>{
+        const bronLabel=r.bron==='voorspelling'
+          ?'<span class="basis-tag" style="color:var(--text-info);border-color:#bcd0f5;background:var(--bg-info)"><i class="ti ti-sparkles"></i> voorspelling</span>'
+          :'<span class="basis-tag" style="color:var(--soort-zeug-text);border-color:var(--soort-zeug-border);background:var(--soort-zeug)"><i class="ti ti-edit"></i> handmatig</span>';
+        return'<div class="bestel-row"><div><div class="bestel-name">'+r.omschrijving+'</div><div style="margin-top:3px">'+bronLabel+'</div></div>'+
+          '<input class="bestel-aantal-input" type="number" min="1" value="'+r.aantal+'" inputmode="numeric" onchange="updateBestelAantal(\'' + r.id + '\',this.value)">'+
+          '<button class="icon-btn del" onclick="removeBestelRegel(\'' + r.id + '\')"><i class="ti ti-trash"></i></button></div>';
+      }).join('')+
+      '</div>';
+  }).join('');
+}
+
+function updateBestelAantal(id,val){
+  const r=bestelLijst.find(x=>x.id===id);
+  if(r){r.aantal=parseInt(val)||1;saveBestelLijst();}
+}
+
+function removeBestelRegel(id){
+  const r=bestelLijst.find(x=>x.id===id);
+  bestelLijst=bestelLijst.filter(x=>x.id!==id);
+  saveBestelLijst();
+  updateBestelTeller();
+  renderBestelLijst();
+  if(r&&r.bron==='voorspelling')renderPrediction();
+}
+
+function confirmBestelGeplaatst(){document.getElementById('bestelBevestigModal').classList.add('show');}
+function closeBestelBevestig(){document.getElementById('bestelBevestigModal').classList.remove('show');}
+function bestelGeplaatst(){
+  bestelLijst=[];saveBestelLijst();updateBestelTeller();
+  closeBestelBevestig();renderBestelLijst();renderPrediction();
+  const s=document.getElementById('bestelStatus');
+  if(s){s.className='status-box show status-success';s.textContent='Bestelling geplaatst! Lijst is leeggemaakt.';}
+}
+function showBestelStatus(type,msg){const el=document.getElementById('bestelStatus');if(el){el.className='status-box show status-'+type;el.textContent=msg;}}
+
+// ── SUGGESTIES ────────────────────────────────────────────────────────────────
+function setupSuggestions(){
+  setupField('m_soort','soort');setupField('m_omschrijving','omschrijving');
+  setupField('bt_soort','soort');setupField('bt_omschrijving','omschrijving');
+  setupField('bm_soort','soort');setupField('bm_omschrijving','omschrijving');
+}
+function setupField(fieldId,type){
+  const input=document.getElementById(fieldId);if(!input)return;
+  const sugEl=document.getElementById('sug_'+fieldId);if(!sugEl)return;
+  input.addEventListener('input',()=>renderSuggestions(fieldId,type));
+  input.addEventListener('keyup',()=>renderSuggestions(fieldId,type));
+  input.addEventListener('focus',()=>{if(input.value.length>0)renderSuggestions(fieldId,type);});
+  sugEl.addEventListener('touchstart',e=>{const item=e.target.closest('.suggestion-item');if(item){e.preventDefault();input.value=item.dataset.value;hideSuggestions();}},{passive:false});
+  sugEl.addEventListener('click',e=>{const item=e.target.closest('.suggestion-item');if(item){input.value=item.dataset.value;hideSuggestions();}});
+}
+function renderSuggestions(fieldId,type){
+  const val=document.getElementById(fieldId).value.toLowerCase();
+  const sugEl=document.getElementById('sug_'+fieldId);
+  if(val.length<1){sugEl.style.display='none';return;}
+  const unique=[...new Set(records.map(r=>r[type]).filter(v=>v&&v.toLowerCase().includes(val)))];
+  if(!unique.length){sugEl.style.display='none';return;}
+  sugEl.innerHTML=unique.slice(0,6).map(v=>'<div class="suggestion-item" data-value="'+v.replace(/"/g,'&quot;')+'">'+v+'</div>').join('');
+  sugEl.style.display='block';
+}
+function hideSuggestions(){document.querySelectorAll('.suggestions-list').forEach(s=>s.style.display='none');}
+document.addEventListener('touchstart',e=>{if(!e.target.closest('.form-group-rel'))hideSuggestions();},{passive:true});
+document.addEventListener('click',e=>{if(!e.target.closest('.form-group-rel'))hideSuggestions();});
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
+async function handleFiles(files){
+  if(!files.length)return;previewRows=[];
+  showUploadStatus('info','Bezig met lezen van '+files.length+' bestand(en)...');
+  for(const file of files){if(!file.name.toLowerCase().endsWith('.pdf'))continue;try{const rows=await parsePDF(file);previewRows.push(...rows);}catch(e){showUploadStatus('danger','Fout bij '+file.name+': '+e.message);return;}}
+  if(!previewRows.length){showUploadStatus('warning','Geen Factuurregels gevonden.');return;}
+  const newCount=previewRows.filter(r=>!isDuplicate(r)).length;
+  showUploadStatus('success',previewRows.length+' regel(s) gevonden — '+newCount+' nieuw.');
+  renderPreview();document.getElementById('fileInput').value='';
+}
+
+async function parsePDF(file){
+  const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;const page=await pdf.getPage(1);const content=await page.getTextContent();
+  const items=content.items.map(i=>({text:i.str.trim(),x:Math.round(i.transform[4]),y:Math.round(i.transform[5])})).filter(i=>i.text.length>0);
+  const rowMap={};for(const item of items){const yKey=Math.round(item.y/4)*4;if(!rowMap[yKey])rowMap[yKey]=[];rowMap[yKey].push(item);}
+  const sortedYs=Object.keys(rowMap).map(Number).sort((a,b)=>b-a);
+  let factuurStart=-1,headerY=-1,factuurEnd=-1;
+  for(let i=0;i<sortedYs.length;i++){const rowText=rowMap[sortedYs[i]].map(r=>r.text).join(' ').toLowerCase();if(rowText.includes('factuurregels'))factuurStart=i;if(factuurStart>-1&&rowText.includes('afleverdatum')&&rowText.includes('soort'))headerY=i;if(headerY>-1&&i>headerY+1&&rowText.includes('logboek')){factuurEnd=i;break;}}
+  if(factuurStart===-1)throw new Error('Geen Factuurregels sectie gevonden');
+  const dataRows=[];let currentDatum='';
+  const start=headerY>-1?headerY+1:factuurStart+1;const end=factuurEnd>-1?factuurEnd:Math.min(start+25,sortedYs.length);
+  for(let i=start;i<end;i++){
+    const rowItems=rowMap[sortedYs[i]].sort((a,b)=>a.x-b.x);const texts=rowItems.map(r=>r.text).filter(t=>t.length>0);if(!texts.length)continue;
+    const combined=texts.join(' ');if(combined.toLowerCase().includes('logboek'))break;
+    const dateMatch=combined.match(/\b(\d{1,2}[-\/]\d{1,2}[-\/]\d{4})\b/);if(dateMatch)currentDatum=normDate(dateMatch[1]);
+    const numMatch=combined.match(/\s(\d+)\s*$/);if(!numMatch)continue;
+    const aantal=parseInt(numMatch[1]);if(aantal<1||aantal>9999)continue;
+    let rest=combined;if(dateMatch)rest=rest.replace(dateMatch[0],'');rest=rest.replace(/\s\d+\s*$/,'').trim();
+    const soortPatterns=['gespeende biggen','vleesvarkens','zeugen','biggen','varkens'];let soort='',omschrijving=rest;
+    for(const sp of soortPatterns){const idx=rest.toLowerCase().indexOf(sp);if(idx!==-1){soort=sp;omschrijving=(rest.substring(0,idx)+rest.substring(idx+sp.length)).trim();break;}}
+    if(!omschrijving)continue;dataRows.push({datum:currentDatum,soort,omschrijving,aantal});
+  }
+  return dataRows;
+}
+
+function renderPreview(){
+  const newCount=previewRows.filter(r=>!isDuplicate(r)).length;
+  document.getElementById('previewTitle').textContent=previewRows.length+' regel(s) — '+newCount+' nieuw, '+(previewRows.length-newCount)+' al aanwezig';
+  document.getElementById('previewSection').style.display='block';
+  document.getElementById('previewList').innerHTML=previewRows.map(r=>{const dup=isDuplicate(r);return'<div class="preview-item'+(dup?' dup':'')+'"><div class="preview-item-top"><span class="preview-item-name">'+r.omschrijving+'</span><span class="badge '+(dup?'badge-dup':'badge-new')+'">'+(dup?'Dubbel':'Nieuw')+'</span></div><div class="preview-item-meta">'+soortPill(r.soort)+'<span>'+fmtDate(r.datum)+'</span><span style="font-weight:600">×'+r.aantal+'</span></div></div>';}).join('');
+}
+
+async function importPreview(){
+  const newRows=previewRows.filter(r=>!isDuplicate(r));
+  if(!newRows.length){showUploadStatus('warning','Alle regels al eerder geïmporteerd.');clearPreview();return;}
+  for(const r of newRows){records.push({...r,id:Date.now()+'_'+Math.random()});importLog.add(makeKey(r));}
+  await saveData();showUploadStatus('success',newRows.length+' regel(s) geïmporteerd en opgeslagen.');
+  clearPreview();renderAll();setTimeout(()=>switchTab('overzicht'),1200);
+}
+function clearPreview(){previewRows=[];document.getElementById('previewSection').style.display='none';document.getElementById('previewList').innerHTML='';}
+function showUploadStatus(type,msg){const el=document.getElementById('uploadStatus');el.className='status-box show status-'+type;el.textContent=msg;}
+
+// ── HANDMATIG ─────────────────────────────────────────────────────────────────
+async function addManual(){
+  const datum=document.getElementById('m_datum').value;
+  const soort=document.getElementById('m_soort').value.trim();
+  const omschrijving=document.getElementById('m_omschrijving').value.trim();
+  const aantal=parseInt(document.getElementById('m_aantal').value);
+  const ms=document.getElementById('manualStatus');
+  if(!datum||!omschrijving||isNaN(aantal)||aantal<1){ms.className='status-box show status-warning';ms.textContent='Vul minimaal datum, omschrijving en aantal in.';return;}
+  const row={datum,soort,omschrijving,aantal};
+  if(isDuplicate(row)){ms.className='status-box show status-warning';ms.textContent='Deze combinatie staat al in de lijst.';return;}
+  records.push({...row,id:Date.now()+'_'+Math.random()});importLog.add(makeKey(row));
+  await saveData();ms.className='status-box show status-success';ms.textContent='Toegevoegd en opgeslagen!';clearManual();renderAll();
+}
+function clearManual(){['m_datum','m_soort','m_omschrijving','m_aantal'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderAll(){renderDateDropdown();renderOrders();}
+function renderDateDropdown(){
+  const dates=[...new Set(records.map(r=>r.datum))].sort((a,b)=>b.localeCompare(a));
+  const sel=document.getElementById('dateSelect');const current=sel.value;
+  sel.innerHTML='<option value="">— Alle datums —</option>'+dates.map(d=>'<option value="'+d+'"'+(current===d?' selected':'')+'>'+fmtDate(d)+'</option>').join('');
+  if(selectedDate&&!dates.includes(selectedDate))selectedDate=null;
+}
+function selectDate(val){selectedDate=val||null;renderOrders();}
+function renderOrders(){
+  const view=document.getElementById('orderView');
+  if(!records.length){view.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Nog geen bestellingen.<br>Upload een PDF of voer handmatig in.</div>';return;}
+  const filtered=selectedDate?records.filter(r=>r.datum===selectedDate):records;
+  if(!filtered.length){view.innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i>Geen regels voor deze datum.</div>';return;}
+  const merged=getMergedRecords(filtered);const byDate={};
+  merged.forEach(r=>{if(!byDate[r.datum])byDate[r.datum]=[];byDate[r.datum].push(r);});
+  const sortedDates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+  view.innerHTML=sortedDates.map(d=>{
+    const rows=sortRows(byDate[d]);
+    return'<div class="card"><div class="card-header"><h3><i class="ti ti-calendar-event"></i>'+fmtDate(d)+'</h3><span>'+rows.length+' regel(s)</span></div><div class="med-list">'+
+      rows.map(r=>{const id=r.ids?r.ids[0]:r.id;return'<div class="med-row"><div><div class="med-name">'+r.omschrijving+'</div><div class="med-soort">'+soortPill(r.soort)+'</div></div><div class="med-aantal">×'+r.aantal+'</div><div class="med-actions"><button class="icon-btn" data-id="'+id+'" onclick="openEdit(this.dataset.id)"><i class="ti ti-edit"></i></button><button class="icon-btn del" data-id="'+id+'" onclick="deleteRecord(this.dataset.id)"><i class="ti ti-trash"></i></button></div></div>';}).join('')+
+      '</div></div>';
+  }).join('');
+}
+
+// ── VOORSPELLING ──────────────────────────────────────────────────────────────
+function renderPrediction(){
+  const view=document.getElementById('predView');
+  const now=new Date();const nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1);
+  const nextMonthNum=nextMonth.getMonth()+1,nextMonthYear=nextMonth.getFullYear();
+  const maandNamen=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const infoEl=document.getElementById('predInfoText');
+  if(infoEl)infoEl.textContent='Voorspelling voor '+maandNamen[nextMonth.getMonth()]+' '+nextMonthYear+'. Gebaseerd op '+merged.length+' regels over '+aantalMaanden+' maand(en). '+(aantalMaanden<12?'Seizoensdata actief na 12 maanden.':'Seizoensdata actief.');
+  if(!records.length){view.innerHTML='<div class="empty"><i class="ti ti-database-off"></i>Nog geen data beschikbaar.</div>';return;}
+  const merged=getMergedRecords(records);
+  const alleDatums=[...new Set(merged.map(r=>r.datum.substring(0,7)))].sort();
+  const aantalMaanden=alleDatums.length;
+  const middelenMap={};
+  for(const r of merged){const key=(r.soort||'')+'|||'+r.omschrijving;if(!middelenMap[key])middelenMap[key]={soort:r.soort,omschrijving:r.omschrijving,alle:[]};middelenMap[key].alle.push({...r,maand:parseInt(r.datum.split('-')[1])});}
+  const predictions=[];
+  for(const key of Object.keys(middelenMap)){
+    const m=middelenMap[key];
+    const perMaandJaar={};for(const r of m.alle){const my=r.datum.substring(0,7);if(!perMaandJaar[my])perMaandJaar[my]=[];perMaandJaar[my].push(r.aantal);}
+    const bestellingsMaanden=Object.keys(perMaandJaar).length;const frequentie=bestellingsMaanden/aantalMaanden;
+    const alleAantallen=m.alle.map(r=>r.aantal);const gemGlobaal=Math.round(alleAantallen.reduce((a,b)=>a+b,0)/alleAantallen.length);
+    const seizoenRecords=m.alle.filter(r=>{const mnd=parseInt(r.datum.split('-')[1]);const jaar=parseInt(r.datum.split('-')[0]);return jaar<nextMonthYear&&Math.abs(mnd-nextMonthNum)<=1;});
+    const heeftSeizoen=seizoenRecords.length>0;
+    const gemSeizoen=heeftSeizoen?Math.round(seizoenRecords.map(r=>r.aantal).reduce((a,b)=>a+b,0)/seizoenRecords.length):null;
+    const verwachtAantal=heeftSeizoen?Math.round(gemSeizoen*0.6+gemGlobaal*0.4):gemGlobaal;
+    let zekerheid,zekerheidLabel,zekerheidDots;
+    if(frequentie>=0.75){zekerheid='hoog';zekerheidLabel='Hoog';zekerheidDots=3;}else if(frequentie>=0.4){zekerheid='mid';zekerheidLabel='Gemiddeld';zekerheidDots=2;}else{zekerheid='laag';zekerheidLabel='Laag';zekerheidDots=1;}
+    predictions.push({...m,verwachtAantal,zekerheid,zekerheidLabel,zekerheidDots,basis:heeftSeizoen?'seizoen + historie':bestellingsMaanden+'x besteld',heeftSeizoen});
+  }
+  
+  const perSoort={};for(const p of predictions){const s=p.soort||'';if(!perSoort[s])perSoort[s]=[];perSoort[s].push(p);}
+  const soortKeys=Object.keys(perSoort).sort((a,b)=>soortRank(a)-soortRank(b)||a.localeCompare(b,'nl'));
+  let html='';
+  for(const soort of soortKeys){
+    const rijen=perSoort[soort].slice().sort((a,b)=>a.omschrijving.localeCompare(b.omschrijving,'nl'));
+    html+='<div class="card"><div class="pred-card-header" style="'+soortHeaderStyle(soort)+'"><span style="font-size:13px;font-weight:600">'+soortPill(soort||'')+'</span><span style="font-size:11px;color:var(--text-secondary)">'+rijen.length+' middel(en)</span></div>'+
+      rijen.map(p=>{
+        const dots=[1,2,3].map(i=>'<span class="dot'+(i<=p.zekerheidDots?' filled-'+p.zekerheid:'')+'"></span>').join('');
+        const alInLijst=bestelLijst.some(b=>b.soort===p.soort&&b.omschrijving===p.omschrijving&&b.bron==='voorspelling');
+        const enc=encodeURIComponent(JSON.stringify({soort:p.soort,omschrijving:p.omschrijving,aantal:p.verwachtAantal}));
+        const btnHtml=alInLijst
+          ? '<button class="btn-pred-add btn-pred-add-done" title="Klik om te deselecteren" data-enc="'+enc+'" onclick="handlePredBtn(this)"><i class="ti ti-check"></i></button>'
+          : '<button class="btn-pred-add" title="Toevoegen aan bestelling" data-enc="'+enc+'" onclick="handlePredBtn(this)"><i class="ti ti-plus"></i></button>';
+        return'<div class="pred-item"><div class="pred-item-top"><span class="pred-item-name">'+p.omschrijving+'</span><div style="display:flex;align-items:center;gap:8px"><span class="pred-item-aantal">×'+p.verwachtAantal+'</span>'+btnHtml+'</div></div><div class="pred-item-meta"><span class="zeker-pill zeker-'+p.zekerheid+'"><span class="confidence-dots">'+dots+'</span> '+p.zekerheidLabel+'</span><span class="basis-tag">'+p.basis+'</span></div></div>';
+      }).join('')+'</div>';
+  }
+  view.innerHTML=html||'<div class="empty"><i class="ti ti-database-off"></i>Niet genoeg data voor een voorspelling.</div>';
+}
+
+// ── EDIT / DELETE ─────────────────────────────────────────────────────────────
+function openEdit(id){const r=records.find(x=>String(x.id)===String(id));if(!r)return;editId=id;document.getElementById('edit_datum').value=r.datum;document.getElementById('edit_soort').value=r.soort||'';document.getElementById('edit_omschrijving').value=r.omschrijving;document.getElementById('edit_aantal').value=r.aantal;document.getElementById('editModal').classList.add('show');}
+function closeEdit(){editId=null;document.getElementById('editModal').classList.remove('show');}
+async function saveEdit(){const r=records.find(x=>String(x.id)===String(editId));if(!r)return;importLog.delete(makeKey(r));r.datum=document.getElementById('edit_datum').value;r.soort=document.getElementById('edit_soort').value.trim();r.omschrijving=document.getElementById('edit_omschrijving').value.trim();r.aantal=parseInt(document.getElementById('edit_aantal').value);importLog.add(makeKey(r));await saveData();closeEdit();renderAll();}
+async function deleteRecord(id){if(!confirm('Deze regel verwijderen?'))return;const idx=records.findIndex(x=>String(x.id)===String(id));if(idx===-1)return;importLog.delete(makeKey(records[idx]));records.splice(idx,1);await saveData();renderAll();}
+async function confirmClearAll(){if(confirm('Weet je zeker dat je ALLE bestellingen wilt verwijderen?')){records=[];importLog=new Set();selectedDate=null;await saveData();renderAll();}}
+
+// ── OPSTARTEN ─────────────────────────────────────────────────────────────────
+async function init(){
+  loadBestelLijst();
+  const loggedInViaCallback=await handleAuthCallback();
+  const hasValidToken=loadStoredToken();
+  const hasRefreshToken=!!localStorage.getItem(REFRESH_TOKEN_KEY);
+
+  if(loggedInViaCallback||hasValidToken){
+    await loadFromOneDrive();
+  } else if(hasRefreshToken){
+    setOnedriveStatus('syncing','Automatisch inloggen...');
+    const refreshed=await refreshAccessToken();
+    if(refreshed){ await loadFromOneDrive(); }
+    else{ loadLocally(); setOnedriveStatus('disconnected','Sessie verlopen — tik op OneDrive om opnieuw in te loggen'); }
+  } else {
+    loadLocally();
+    setOnedriveStatus('disconnected','Niet verbonden — tik op OneDrive om in te loggen');
+  }
+  renderAll();setupSuggestions();
+}
+
+init();
+</script>
+</body>
+</html>
